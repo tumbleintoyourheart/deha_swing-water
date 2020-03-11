@@ -143,8 +143,8 @@ def ai():
                 if mode_pred:
                     pred_res = tf_pred(Path(pred_abs_path), *tf_models)
                     pred_res = [f'{res[0][0]:.2f} %' for res in pred_res]
-                response['Results']['nos']['Prediction'] = pred_res[0]
-                response['Results']['std']['Prediction'] = pred_res[1]
+                    response['Results']['nos']['Prediction'] = pred_res[0]
+                    response['Results']['std']['Prediction'] = pred_res[1]
                 
                 if mode_vis:
                     vis_res = tf_vis(Path(vis_abs_path), figs_savedir, False, *tf_models)
