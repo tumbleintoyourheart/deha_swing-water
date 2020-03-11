@@ -30,24 +30,23 @@ deprecation._PRINT_DEPRECATION_WARNINGS = False
 
 
 
-def predict(csv_input, scaler, model=None):
-    #予測用の影響・制御因子データ読み込み
+def predict(csv_input, scaler, model1, model2):
     inp = pd.read_csv(csv_input)
+    
+    pred_unnormed = model1.predict(inp)
+    print(f'nos: {pred_unnormed}.')
 
-    #標準化データのロードと標準化の実行
-    # scaler = pickle.load(open("scaler.pickle", "rb"))
     inp = scaler.transform(inp)
+    pred_normed = model2.predict(inp)
+    print(f'std: {pred_normed}.')
 
-    #予測実行
-    pred_normed = model.predict(inp)
-    print(f'Normalized prediction: {pred_normed}.')
-
-    return pred_normed
+    return pred_unnormed, pred_normed
 
 if __name__ == '__main__':
-    csv_input = './200302_A01_prediction.csv'
+    csv_input = Path('./csv')/'200302_atg_dsp_prediction.csv'
     
-    scaler = pickle.load(open("scaler.pickle", "rb"))
-    model = keras.models.load_model('nn_model.hdf5')
+    scaler = pickle.load(open(Path('./models')/'scaler.pickle', 'rb'))
+    model1 = keras.models.load_model(Path('./models')/'200310_atg_dsp_tf_nn_nos.hdf5')
+    model2 = keras.models.load_model(Path('./models')/'200310_atg_dsp_tf_nn_std.hdf5')
     
-    predict(csv_input, scaler, model)
+    predict(csv_input, scaler, model1, model2)

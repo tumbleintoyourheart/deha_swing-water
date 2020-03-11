@@ -28,17 +28,40 @@ deprecation._PRINT_DEPRECATION_WARNINGS = False
 
 
 
-def visualize(csv_input, figs_savedir, show, scaler, model):
+def visualize(csv_input, figs_savedir, show, scaler, model1, model2):
+    '''
+    Unnormalized
+    '''
     inp = pd.read_csv(csv_input)
     inp_pred = inp.drop(columns=["day", "moisture_per"])
     
-    inp_pred = scaler.transform(inp_pred)
-
-    normed_pred = model.predict(inp_pred)
+    
+    unnormed_pred = model1.predict(inp_pred)
 
     plt.figure(0)
+    plt.scatter(inp["moisture_per"], unnormed_pred)
+    unnormed_savepath = figs_savedir/'tf_no_visualization.png'
+    plt.savefig(unnormed_savepath)
+    if show:
+        plt.show()
+        plt.clf()
+    
+    unnormed_r2 = round(r2_score(inp["moisture_per"], unnormed_pred), 2)
+    unnormed_rmse = round(np.sqrt(mean_squared_error(inp["moisture_per"], unnormed_pred)), 2)
+    print(f'R2: {unnormed_r2}')
+    print(f'RMSE: {unnormed_rmse}')
+    
+    
+    '''
+    Normalized
+    '''
+    inp_pred = scaler.transform(inp_pred)
+
+    normed_pred = model2.predict(inp_pred)
+
+    plt.figure(1)
     plt.scatter(inp["moisture_per"], normed_pred)
-    normed_savepath = figs_savedir/'tf_normalized_visualization.png'
+    normed_savepath = figs_savedir/'tf_std_visualization.png'
     plt.savefig(normed_savepath)
     if show:
         plt.show()
@@ -49,14 +72,16 @@ def visualize(csv_input, figs_savedir, show, scaler, model):
     print(f'R2: {normed_r2}')
     print(f'RMSE: {normed_rmse}')
     
-    return normed_savepath, normed_r2, normed_rmse
+    return (unnormed_savepath, unnormed_r2, unnormed_rmse), (normed_savepath, normed_r2, normed_rmse)
     
 if __name__ == '__main__':
     figs_savedir = Path('./visualizations')
     os.makedirs(figs_savedir, exist_ok=True)
-    csv_input = './200302_A01_visual.csv'
     
-    scaler = pickle.load(open("scaler.pickle", "rb"))
-    model = keras.models.load_model('nn_model.hdf5')
+    csv_input = Path('./csv')/'200302_atg_dsp_visual.csv'
     
-    visualize(csv_input, figs_savedir, True, scaler, model)
+    scaler = pickle.load(open(Path('./models')/'scaler.pickle', 'rb'))
+    model1 = keras.models.load_model(Path('./models')/'200310_atg_dsp_tf_nn_nos.hdf5')
+    model2 = keras.models.load_model(Path('./models')/'200310_atg_dsp_tf_nn_std.hdf5')
+    
+    visualize(csv_input, figs_savedir, True, scaler, model1, model2)

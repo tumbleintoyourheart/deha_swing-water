@@ -1,3 +1,0 @@
-# 実装環境
-Python 3.6.8
-scikit-learn 0.20.2 

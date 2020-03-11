@@ -11,13 +11,15 @@ from sklearn.metrics import r2_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.externals import joblib
 
+from pathlib import *
+
 import warnings
 for w in [UserWarning, FutureWarning, DeprecationWarning]:
     warnings.filterwarnings("ignore", category=w)
 
 
 
-def predict(csv_input, model1, scaler, model2):
+def predict(csv_input, scaler, model1, model2):
     '''
     Unnormalized
     '''
@@ -29,7 +31,7 @@ def predict(csv_input, model1, scaler, model2):
 
     #予測実行
     pred_unnormed = model1.predict(inp)
-    print(f'Unnormalized prediction: {pred_unnormed}.')
+    print(f'nos: {pred_unnormed}.')
 
 
     '''
@@ -46,15 +48,15 @@ def predict(csv_input, model1, scaler, model2):
 
     #予測実行
     pred_normed = model2.predict(inp)
-    print(f'Normalized prediction: {pred_normed}.')
+    print(f'std: {pred_normed}.')
     
     return pred_unnormed, pred_normed
     
 if __name__ == '__main__':
-    csv_input = './200302_A01_prediction.csv'
+    csv_input = Path('./csv')/'200302_atg_dsp_prediction.csv'
     
-    model1 = pickle.load(open('rf_model.pickle', mode='rb'))
-    scaler = pickle.load(open("scaler.pickle", "rb"))
-    model2 = pickle.load(open('rfstd_model.pickle', mode='rb'))
+    scaler = pickle.load(open(Path('./models')/'scaler.pickle', 'rb'))
+    model1 = pickle.load(open(Path('./models')/'200310_atg_dsp_sk_rf_nos.pickle', mode='rb'))
+    model2 = pickle.load(open(Path('./models')/'200310_atg_dsp_sk_rf_std.pickle', mode='rb'))
     
-    predict(csv_input, model1, scaler, model2)
+    predict(csv_input, scaler, model1, model2)

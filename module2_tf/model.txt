@@ -1,3 +1,0 @@
-# 実装環境
-Python 3.6.8
-tensorflow 1.15.0

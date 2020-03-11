@@ -10,11 +10,15 @@ from sklearn.metrics import r2_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.externals import joblib
 import os
+
 from pathlib import *
 
+import warnings
+for w in [UserWarning, FutureWarning, DeprecationWarning]:
+    warnings.filterwarnings("ignore", category=w)
 
 
-def visualize(csv_input, figs_savedir, show, model1, scaler, model2):
+def visualize(csv_input, figs_savedir, show, scaler, model1, model2):
     '''
     Unnormalized
     '''
@@ -26,7 +30,7 @@ def visualize(csv_input, figs_savedir, show, model1, scaler, model2):
 
     plt.figure(0)
     plt.scatter(inp["moisture_per"], unnormed_pred)
-    unnormed_savepath = figs_savedir/'sklearn_unnormalized_visualization.png'
+    unnormed_savepath = figs_savedir/'sklearn_no_visualization.png'
     plt.savefig(unnormed_savepath)
     if show:
         plt.show()
@@ -47,7 +51,7 @@ def visualize(csv_input, figs_savedir, show, model1, scaler, model2):
 
     plt.figure(1)
     plt.scatter(inp["moisture_per"], normed_pred)
-    normed_savepath = figs_savedir/'sklearn_normalized_visualization.png'
+    normed_savepath = figs_savedir/'sklearn_std_visualization.png'
     plt.savefig(normed_savepath)
     if show:
         plt.show()
@@ -63,10 +67,11 @@ def visualize(csv_input, figs_savedir, show, model1, scaler, model2):
 if __name__ == '__main__':
     figs_savedir = Path('./visualizations')
     os.makedirs(figs_savedir, exist_ok=True)
-    csv_input = './200302_A01_visual.csv'
     
-    model1 = pickle.load(open('rf_model.pickle', mode='rb'))
-    scaler = pickle.load(open("scaler.pickle", "rb"))
-    model2 = pickle.load(open('rfstd_model.pickle', mode='rb'))
+    csv_input = Path('./csv')/'200302_atg_dsp_visual.csv'
     
-    visualize(csv_input, figs_savedir, True, model1, scaler, model2)
+    scaler = pickle.load(open(Path('./models')/'scaler.pickle', 'rb'))
+    model1 = pickle.load(open(Path('./models')/'200310_atg_dsp_sk_rf_nos.pickle', mode='rb'))
+    model2 = pickle.load(open(Path('./models')/'200310_atg_dsp_sk_rf_std.pickle', mode='rb'))
+    
+    visualize(csv_input, figs_savedir, True, scaler, model1, model2)
