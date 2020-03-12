@@ -75,7 +75,7 @@ def new_model():
         files = request.files.to_dict()
         _, name, abs_path = get_input(files, 'new_model')
         
-        return f'Successfully uploaded {name}.'
+        return f'Successfully uploaded {name}. Available models: {available_models}.'
         
     else: return 'Not allowed method.'
     
