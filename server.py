@@ -75,7 +75,7 @@ def new_model():
         files = request.files.to_dict()
         _, name, abs_path = get_input(files, 'new_model')
         
-        return f'Successfully uploaded {name}'
+        return f'Successfully uploaded {name}.'
         
     else: return 'Not allowed method.'
     
@@ -85,24 +85,28 @@ def new_model():
 def ai():
     if request.method == 'POST':
         # final response
-        response = {'Results': {'nos': {},
-                                'std': {}}}
+        response = {}
         
         
         values = request.values.to_dict()
-        # module to use, either sklearn or tensorflow
-        if values.get('module'): module = values['module']
-        else: return 'No module specified. Allowed ones: sklearn, tensorflow.'
+        
+        # # module to use, either sklearn or tensorflow
+        # if values.get('module'): module = values['module']
+        # else: return 'No module specified. Allowed ones: sklearn, tensorflow.'
         
         # check if user want to use new models instead of the defaults
         global sklearn_default_models, tf_default_models
+        sklearn_nos, sklearn_std, tf_nos, tf_std = False, False, False, False
+        modules = set()
         if values.get('models'):
             models = values['models'].replace(' ', '').split(',')
             for m in models:
-                if re.search(r'sk\w*nos', m): sklearn_default_models[0] = m
-                elif re.search(r'sk\w*std', m): sklearn_default_models[1] = m
-                elif re.search(r'tf\w*nos', m): tf_default_models[0] = m
-                elif re.search(r'tf\w*std', m): tf_default_models[1] = m
+                if re.search(r'sk\w*nos.pickle', m): sklearn_default_models[0] = m; modules.add('sklearn'); sklearn_nos = True
+                elif re.search(r'sk\w*std.pickle', m): sklearn_default_models[1] = m; modules.add('sklearn'); sklearn_std = True
+                elif re.search(r'tf\w*nos.hdf5', m): tf_default_models[0] = m; modules.add('tensorflow'); tf_nos = True
+                elif re.search(r'tf\w*std.hdf5', m): tf_default_models[1] = m; modules.add('tensorflow'); tf_std = True
+                else: return f'Not available models. Please choose from: {available_models}.'
+        else: return 'Please specify models to use.'
         
         
         # init models
@@ -114,49 +118,58 @@ def ai():
         mode_pred, _, pred_abs_path = get_input(files, 'csv_prediction')
         mode_vis, _, vis_abs_path = get_input(files, 'csv_visual')
         
-        if module == 'sklearn':
-            response['Models'] = {'nos': sklearn_default_models[0],
-                                  'std': sklearn_default_models[1]}
-            if mode_pred:
-                pred_res = sklearn_pred(Path(pred_abs_path), *sklearn_models)
-                pred_res = [f'{res[0]:.2f} %' for res in pred_res]
-                response['Results']['nos']['Prediction'] = pred_res[0]
-                response['Results']['std']['Prediction'] = pred_res[1]
-
-            if mode_vis:
-                vis_res = sklearn_vis(Path(vis_abs_path), figs_savedir, False, *sklearn_models)
-                response['Results']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
-                                                               'R2': vis_res[0][1],
-                                                               'RMSE': vis_res[0][2]}
-                response['Results']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
-                                                               'R2': vis_res[1][1],
-                                                               'RMSE': vis_res[1][2]}
-            return jsonify(response)
-
-        elif module == 'tensorflow':
-            response['Models'] = {'nos': tf_default_models[0],
-                                  'std': tf_default_models[1]}
-            global graph, sess
-            with graph.as_default():
-                set_session(sess)
+        for module in modules:
+            if module == 'sklearn':
+                response['Scikit-learn'] = {'nos': {},
+                                            'std': {}}
+                
+                if sklearn_nos: response['Scikit-learn']['nos']['Model'] = sklearn_default_models[0]
+                if sklearn_std: response['Scikit-learn']['std']['Model'] = sklearn_default_models[1]
                 
                 if mode_pred:
-                    pred_res = tf_pred(Path(pred_abs_path), *tf_models)
-                    pred_res = [f'{res[0][0]:.2f} %' for res in pred_res]
-                    response['Results']['nos']['Prediction'] = pred_res[0]
-                    response['Results']['std']['Prediction'] = pred_res[1]
-                
+                    pred_res = sklearn_pred(Path(pred_abs_path), *sklearn_models)
+                    pred_res = [f'{res[0]:.2f} %' for res in pred_res]
+                    if sklearn_nos: response['Scikit-learn']['nos']['Prediction'] = pred_res[0]
+                    if sklearn_std: response['Scikit-learn']['std']['Prediction'] = pred_res[1]
+
                 if mode_vis:
-                    vis_res = tf_vis(Path(vis_abs_path), figs_savedir, False, *tf_models)
-                    response['Results']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
+                    vis_res = sklearn_vis(Path(vis_abs_path), figs_savedir, False, *sklearn_models)
+                    if sklearn_nos: response['Scikit-learn']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
                                                                 'R2': vis_res[0][1],
                                                                 'RMSE': vis_res[0][2]}
-                    response['Results']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
+                    if sklearn_std: response['Scikit-learn']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
                                                                 'R2': vis_res[1][1],
                                                                 'RMSE': vis_res[1][2]}
-            return jsonify(response)
+        
+            elif module == 'tensorflow':
+                response['Tensorflow'] = {'nos': {},
+                                          'std': {}}
                 
-        else: return 'module must be either sklearn or tensorflow.'
+                if tf_nos: response['Tensorflow']['nos']['Model'] = tf_default_models[0]
+                if tf_std: response['Tensorflow']['std']['Model'] = tf_default_models[1]
+                
+                global graph, sess
+                with graph.as_default():
+                    set_session(sess)
+                    
+                    if mode_pred:
+                        pred_res = tf_pred(Path(pred_abs_path), *tf_models)
+                        pred_res = [f'{res[0][0]:.2f} %' for res in pred_res]
+                        if tf_nos: response['Tensorflow']['nos']['Prediction'] = pred_res[0]
+                        if tf_std: response['Tensorflow']['std']['Prediction'] = pred_res[1]
+                    
+                    if mode_vis:
+                        vis_res = tf_vis(Path(vis_abs_path), figs_savedir, False, *tf_models)
+                        if tf_nos: response['Tensorflow']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
+                                                                                     'R2': vis_res[0][1],
+                                                                                     'RMSE': vis_res[0][2]}
+                        if tf_std: response['Tensorflow']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
+                                                                                     'R2': vis_res[1][1],
+                                                                                     'RMSE': vis_res[1][2]}
+                        
+        return jsonify(response)
+                
+        
         
     else: return 'Not allowed method.'
 
@@ -165,6 +178,7 @@ def ai():
 if __name__ == '__main__':
     sklearn_path = Path('./module1_sklearn')
     tf_path = Path('./module2_tf')
+    available_models = [m.name for m in list(sklearn_path.rglob('*.pickle')) if 'scaler' not in m.name] + [m.name for m in list(tf_path.rglob('*.hdf5'))]
     
     figs_savedir = Path('./visualizations')
     os.makedirs(figs_savedir, exist_ok=True)
