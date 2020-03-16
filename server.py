@@ -78,16 +78,17 @@ def new_model():
         files = request.files.to_dict()
         names = []
         
-        nos = get_input(files, 'nos_model')
-        std = get_input(files, 'std_model')
+        model = get_input(files, 'model')
         scaler = get_input(files, 'scaler')
         
-        for model in [nos, std, scaler]:
-            if model[0]: names.append(model[1])
+        for f in [model, scaler]:
+            if f[0]: names.append(f[1])
         
-        if not (nos[0] or std[0] or scaler[0]): return 'Please use available keys: nos_model, std_model, scaler.'
+        if not (model[0] or scaler[0]): return 'Please use available keys: model, scaler.'
         
-        if [std[0], scaler[0]].count(True) == 1:
+        if not model[0]: return 'Please specify a model to upload.'
+        std = ('std' in model[1])
+        if [std, scaler[0]].count(True) == 1:
             return 'std model and scaler must come together. Please make sure to upload both.'
         
         return f'Successfully uploaded {names}.'
