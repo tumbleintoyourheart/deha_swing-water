@@ -2,6 +2,7 @@ import os, sys, argparse, pickle, re
 from pathlib import *
 
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import traceback
 
@@ -28,6 +29,7 @@ deprecation._PRINT_DEPRECATION_WARNINGS = False
 
 
 app = Flask(__name__)
+CORS(app)
 
         
 sklearn_default_models = ['200310_atg_dsp_sk_rf_nos.pickle', '200310_atg_dsp_sk_rf_std.pickle']
