@@ -78,13 +78,9 @@ def get_input(files, key):
 def new_model():
     if request.method == 'POST':
         files = request.files.to_dict()
-        names = []
         
         model = get_input(files, 'model')
         scaler = get_input(files, 'scaler')
-        
-        for f in [model, scaler]:
-            if f[0]: names.append(f[1])
         
         if not (model[0] or scaler[0]): return 'Please use available keys: model, scaler.'
         
@@ -93,7 +89,7 @@ def new_model():
         if [std, scaler[0]].count(True) == 1:
             return 'std model and scaler must come together. Please make sure to upload both.'
         
-        return f'Successfully uploaded {names}.'
+        return f'Successfully uploaded {model[1]}.'
         
     else: return 'Not allowed method.'
     
