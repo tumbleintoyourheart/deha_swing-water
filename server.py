@@ -55,13 +55,16 @@ def get_input(files, key):
         inp = files[key]
         inp_name = secure_filename(inp.filename)
         
-        if 'csv' in inp_name: save_path = Path('./csv')
-        elif 'sk' in inp_name: save_path = Path(sklearn_path/'models')
-        elif 'tf' in inp_name: save_path = Path(tf_path/'models')
-        os.makedirs(save_path, exist_ok=True)
+        if 'csv' in inp_name: save_path = [Path('./csv')]
+        elif 'sk' in inp_name: save_path = [Path(sklearn_path/'models')]
+        elif 'tf' in inp_name: save_path = [Path(tf_path/'models')]
+        elif 'scaler' in inp_name: save_path = [Path(sklearn_path/'models'), Path(tf_path/'models')]
         
-        abs_path = os.path.join(save_path, inp_name)
-        inp.save(abs_path)
+        
+        for path in save_path:
+            os.makedirs(path, exist_ok=True)
+            abs_path = os.path.join(path, inp_name)
+            inp.save(abs_path)
         
         return True, inp_name, abs_path
     
@@ -73,9 +76,21 @@ def get_input(files, key):
 def new_model():
     if request.method == 'POST':
         files = request.files.to_dict()
-        _, name, abs_path = get_input(files, 'new_model')
+        names = []
         
-        return f'Successfully uploaded {name}. Available models: {available_models}.'
+        nos = get_input(files, 'nos_model')
+        std = get_input(files, 'std_model')
+        scaler = get_input(files, 'scaler')
+        
+        for model in [nos, std, scaler]:
+            if model[0]: names.append(model[1])
+        
+        if not (nos[0] or std[0] or scaler[0]): return 'Please use available keys: nos_model, std_model, scaler.'
+        
+        if [std[0], scaler[0]].count(True) == 1:
+            return 'std model and scaler must come together. Please make sure to upload both.'
+        
+        return f'Successfully uploaded {names}.'
         
     else: return 'Not allowed method.'
     
