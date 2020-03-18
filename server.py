@@ -127,13 +127,13 @@ def ai():
         if csv_pred != None:
             csv_pred_abspath = save_input(csv_pred, csv_pred_name, csv_savedir)
             mode_pred = True
-            if 'prediction' not in csv_pred_name: return 'Not legal file for "prediction".'
+            if 'prediction' not in csv_pred_name: return 'Not legal file for csv_prediction.'
         
         csv_vis, csv_vis_name = get_input(files, 'csv_visual')
         if csv_vis != None: 
             csv_vis_abspath = save_input(csv_vis, csv_vis_name, csv_savedir)
             mode_vis = True
-            if 'visual' not in csv_vis_name: return 'Not legal file for "visual".'
+            if 'visual' not in csv_vis_name: return 'Not legal file for csv_visual.'
         
         for module in modules:
             if module == 'sklearn':
