@@ -1,0 +1,36 @@
+①      Renom Model
+Renom được pull về từ server, sau khi khởi động Virtual Local Server.
+Cụ thể, sau khi khởi động renom_img trên terminal, chạy đoạn script sau(Python) thì sẽ pull renom model về。
+
+【Terminal】
+renom_img --port 8080 ←Tuỳ ý thay đổi
+【Script thực thi】　〇〇.py
+được------------------------------------------------------------------
+HOST = "localhost"
+PORT = "8080" #Set giống với port đang chạy trên terminal
+url = "http://{}".format(HOST)
+#Hãy set model ID tại đây
+model_id = '3' # 任意に変更したい。
+deploy_api = url + ':' + PORT + '/api/renom_rg/models/' + model_id + '/deploy'
+requests.post(deploy_api)
+# regressor Module pull
+regressor = Regressor(url, PORT)
+regressor.pull()　#←Pull model tại đây
+-------------------------------------------------------------------------
+
+②        File theo kiểu Tiêu chuẩn hoá
+Với tiêu chuản hoá, thì Renom sẽ có 2 loại 説明変数 và 目的変数.
+
+Với mỗi loaị sẽ được tạo model riêng.
+Quy tắc đặt tên 
+scaler_x.pickle:  説明変数用
+scaler_y.pickle:目的変数用
+
+③File dữ liệu(CSV)（ Cách đặt tên giống với tensolflow, sklearn）
+　　　　※ルールはモデル名称と統一
+    ：年月日_施設名_設備名_prediction.csv 例）200310_atg_dsp_prediction.csv
+    ：年月日_施設名_設備名_visual.csv 例）200310_atg_dsp_visual.csv
+
+　・prediction.pyを標準化ありなしに分割（stdが標準化あり、nosが標準化無し）
+　・visualdata.pyを標準化ありなしに分割（stdが標準化あり、nosが標準化無し）
+   ※print(data)がpredictionの結果を元のデータフレームに追加した結果です。
