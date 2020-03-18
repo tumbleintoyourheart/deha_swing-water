@@ -1,4 +1,4 @@
-import os, sys, argparse, pickle, re
+import os, sys, argparse, pickle, re, copy
 from pathlib import *
 
 from flask import Flask, jsonify, request
@@ -51,26 +51,19 @@ def init(sklearn_defaults=sklearn_default_models, tf_defaults=tf_default_models)
     return sklearn_models, tf_models
   
     
-    
+
 def get_input(files, key):
     if files.get(key):
         inp = files[key]
         inp_name = secure_filename(inp.filename)
-        
-        if 'csv' in inp_name: save_path = [Path('./csv')]
-        elif 'sk' in inp_name: save_path = [Path(sklearn_path/'models')]
-        elif 'tf' in inp_name: save_path = [Path(tf_path/'models')]
-        elif 'scaler' in inp_name: save_path = [Path(sklearn_path/'models'), Path(tf_path/'models')]
-        
-        
-        for path in save_path:
-            os.makedirs(path, exist_ok=True)
-            abs_path = os.path.join(path, inp_name)
-            inp.save(abs_path)
-        
-        return True, inp_name, abs_path
+        return inp, inp_name
+    else: return None, None
     
-    else: return False, None, None
+def save_input(inp, inp_name, save_dir):
+    os.makedirs(save_dir, exist_ok=True)
+    abs_path = os.path.join(save_dir, inp_name)
+    inp.save(abs_path)
+    return abs_path
                 
 
 
@@ -79,17 +72,24 @@ def new_model():
     if request.method == 'POST':
         files = request.files.to_dict()
         
-        model = get_input(files, 'model')
-        scaler = get_input(files, 'scaler')
+        model, model_name = get_input(files, 'model')
+        scaler, scaler_name = get_input(files, 'scaler')
         
-        if not (model[0] or scaler[0]): return 'Please use available keys: model, scaler.'
+        if model == None: return 'Please specify a model to upload.'
         
-        if not model[0]: return 'Please specify a model to upload.'
-        std = ('std' in model[1])
-        if [std, scaler[0]].count(True) == 1:
+        if [('std' in model_name), scaler != None].count(True) == 1:
             return 'std model and scaler must come together. Please make sure to upload both.'
         
-        return f'Successfully uploaded {model[1]}.'
+        if 'sk' in model_name:
+            save_dir = sklearn_path/'models'
+            save_input(model, model_name, save_dir)
+            if scaler != None: save_input(scaler, scaler_name, save_dir)
+        elif 'tf' in model_name:
+            save_dir = tf_path/'models'
+            save_input(model, model_name, save_dir)
+            if scaler != None: save_input(scaler, scaler_name, save_dir)
+
+        return f'{model_name}'
         
     else: return 'Not allowed method.'
     
@@ -98,17 +98,12 @@ def new_model():
 @app.route('/ai', methods=['GET', 'POST'])
 def ai():
     if request.method == 'POST':
-        # final response
+        mode_pred, mode_vis = False, False
         response = {}
         
         
         values = request.values.to_dict()
         
-        # # module to use, either sklearn or tensorflow
-        # if values.get('module'): module = values['module']
-        # else: return 'No module specified. Allowed ones: sklearn, tensorflow.'
-        
-        # check if user want to use new models instead of the defaults
         global sklearn_default_models, tf_default_models
         sklearn_nos, sklearn_std, tf_nos, tf_std = False, False, False, False
         modules = set()
@@ -127,10 +122,18 @@ def ai():
         sklearn_models, tf_models = init()
         
         
-        # request files
         files = request.files.to_dict()
-        mode_pred, _, pred_abs_path = get_input(files, 'csv_prediction')
-        mode_vis, _, vis_abs_path = get_input(files, 'csv_visual')
+        csv_pred, csv_pred_name = get_input(files, 'csv_prediction')
+        if csv_pred != None:
+            csv_pred_abspath = save_input(csv_pred, csv_pred_name, csv_savedir)
+            mode_pred = True
+            if 'prediction' not in csv_pred_name: return 'Not legal file for "prediction".'
+        
+        csv_vis, csv_vis_name = get_input(files, 'csv_visual')
+        if csv_vis != None: 
+            csv_vis_abspath = save_input(csv_vis, csv_vis_name, csv_savedir)
+            mode_vis = True
+            if 'visual' not in csv_vis_name: return 'Not legal file for "visual".'
         
         for module in modules:
             if module == 'sklearn':
@@ -141,13 +144,13 @@ def ai():
                 if sklearn_std: response['Scikit-learn']['std']['Model'] = sklearn_default_models[1]
                 
                 if mode_pred:
-                    pred_res = sklearn_pred(Path(pred_abs_path), *sklearn_models)
+                    pred_res = sklearn_pred(Path(csv_pred_abspath), *sklearn_models)
                     pred_res = [f'{res[0]:.2f} %' for res in pred_res]
                     if sklearn_nos: response['Scikit-learn']['nos']['Prediction'] = pred_res[0]
                     if sklearn_std: response['Scikit-learn']['std']['Prediction'] = pred_res[1]
 
                 if mode_vis:
-                    vis_res = sklearn_vis(Path(vis_abs_path), figs_savedir, False, *sklearn_models)
+                    vis_res = sklearn_vis(Path(csv_vis_abspath), figs_savedir, False, *sklearn_models)
                     if sklearn_nos: response['Scikit-learn']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
                                                                 'R2': vis_res[0][1],
                                                                 'RMSE': vis_res[0][2]}
@@ -167,13 +170,13 @@ def ai():
                     set_session(sess)
                     
                     if mode_pred:
-                        pred_res = tf_pred(Path(pred_abs_path), *tf_models)
+                        pred_res = tf_pred(Path(csv_pred_abspath), *tf_models)
                         pred_res = [f'{res[0][0]:.2f} %' for res in pred_res]
                         if tf_nos: response['Tensorflow']['nos']['Prediction'] = pred_res[0]
                         if tf_std: response['Tensorflow']['std']['Prediction'] = pred_res[1]
                     
                     if mode_vis:
-                        vis_res = tf_vis(Path(vis_abs_path), figs_savedir, False, *tf_models)
+                        vis_res = tf_vis(Path(csv_vis_abspath), figs_savedir, False, *tf_models)
                         if tf_nos: response['Tensorflow']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
                                                                                      'R2': vis_res[0][1],
                                                                                      'RMSE': vis_res[0][2]}
@@ -194,7 +197,8 @@ if __name__ == '__main__':
     tf_path = Path('./module2_tf')
     available_models = [m.name for m in list(sklearn_path.rglob('*.pickle')) if 'scaler' not in m.name] + [m.name for m in list(tf_path.rglob('*.hdf5'))]
     
+    csv_savedir = Path('./csv')
     figs_savedir = Path('./visualizations')
-    os.makedirs(figs_savedir, exist_ok=True)
+    for d in [csv_savedir, figs_savedir]: os.makedirs(d, exist_ok=True)
     
     app.run(host='0.0.0.0', port=5000)
