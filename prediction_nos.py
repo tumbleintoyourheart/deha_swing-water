@@ -6,7 +6,7 @@ import requests
 from sklearn import preprocessing
 from renom_rg.api.interface.regressor import Regressor
 
-HOST = "13.230.125.129"
+HOST = "localhost"
 PORT = "80"
 url = "http://{}".format(HOST)
 # 任意のモデルをデプロイ（モデルIDは変更してください）
