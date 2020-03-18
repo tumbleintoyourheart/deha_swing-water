@@ -153,10 +153,12 @@ def ai():
                     vis_res = sklearn_vis(Path(csv_vis_abspath), figs_savedir, False, *sklearn_models)
                     if sklearn_nos: response['Scikit-learn']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
                                                                 'R2': vis_res[0][1],
-                                                                'RMSE': vis_res[0][2]}
+                                                                'RMSE': vis_res[0][2],
+                                                                'Sorted predictions': vis_res[0][3]}
                     if sklearn_std: response['Scikit-learn']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
                                                                 'R2': vis_res[1][1],
-                                                                'RMSE': vis_res[1][2]}
+                                                                'RMSE': vis_res[1][2],
+                                                                'Sorted predictions': vis_res[1][3]}
         
             elif module == 'tensorflow':
                 response['Tensorflow'] = {'nos': {},
@@ -179,10 +181,12 @@ def ai():
                         vis_res = tf_vis(Path(csv_vis_abspath), figs_savedir, False, *tf_models)
                         if tf_nos: response['Tensorflow']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
                                                                                      'R2': vis_res[0][1],
-                                                                                     'RMSE': vis_res[0][2]}
+                                                                                     'RMSE': vis_res[0][2],
+                                                                                     'Sorted predictions': vis_res[0][3]}
                         if tf_std: response['Tensorflow']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
                                                                                      'R2': vis_res[1][1],
-                                                                                     'RMSE': vis_res[1][2]}
+                                                                                     'RMSE': vis_res[1][2],
+                                                                                     'Sorted predictions': vis_res[1][3]}
                         
         return jsonify(response)
                 

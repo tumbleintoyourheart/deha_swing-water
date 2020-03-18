@@ -23,11 +23,13 @@ def visualize(csv_input, figs_savedir, show, scaler, model1, model2):
     Unnormalized
     '''
     inp = pd.read_csv(csv_input)
+    # sorted_inp_day = sorted(, reverse=True)
     inp_pred = inp.drop(columns=["day", "moisture_per"])
 
-
     unnormed_pred = model1.predict(inp_pred)
-
+    
+    unnormed_res = [x for _, x in sorted(zip(inp['day'].tolist(), unnormed_pred.tolist()), key=lambda Zip: Zip[0])]
+    
     plt.figure(0)
     plt.scatter(inp["moisture_per"], unnormed_pred)
     unnormed_savepath = figs_savedir/'sklearn_no_visualization.png'
@@ -49,6 +51,8 @@ def visualize(csv_input, figs_savedir, show, scaler, model1, model2):
 
     normed_pred = model2.predict(inp_pred)
 
+    normed_res = [x for _, x in sorted(zip(inp['day'].tolist(), normed_pred.tolist()), key=lambda Zip: Zip[0])]
+    
     plt.figure(1)
     plt.scatter(inp["moisture_per"], normed_pred)
     normed_savepath = figs_savedir/'sklearn_std_visualization.png'
@@ -62,7 +66,7 @@ def visualize(csv_input, figs_savedir, show, scaler, model1, model2):
     print(f'R2: {normed_r2}')
     print(f'RMSE: {normed_rmse}')
     
-    return (unnormed_savepath, unnormed_r2, unnormed_rmse), (normed_savepath, normed_r2, normed_rmse)
+    return (unnormed_savepath, unnormed_r2, unnormed_rmse, unnormed_res), (normed_savepath, normed_r2, normed_rmse, normed_res)
     
 if __name__ == '__main__':
     figs_savedir = Path('./visualizations')
