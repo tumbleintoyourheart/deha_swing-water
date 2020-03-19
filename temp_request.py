@@ -8,4 +8,4 @@ from renom_rg.api.interface.regressor import Regressor
 
 url = 'http://0.0.0.0:80/'
 res = requests.post(url)
-print(dir(res))
+print(res.text)
