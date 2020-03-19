@@ -188,7 +188,12 @@ def new_scaler():
 #     else: return 'Not allowed method.'
 
 
- 
+@app.route('/upload_scaler', methods=['GET', 'POST'])
+def hello():
+    return 'hello'
+
+
+    
 if __name__ == '__main__':
     csv_savedir = Path('./csv')
     figs_savedir = Path('./visualizations')
