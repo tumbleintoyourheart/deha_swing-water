@@ -1,5 +1,5 @@
 import os, sys, argparse, pickle, re, copy
-# from pathlib import *
+from pathlib import *
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -195,8 +195,8 @@ def hello():
 
 
 if __name__ == '__main__':
-    # csv_savedir = Path('./csv')
-    # figs_savedir = Path('./visualizations')
+    csv_savedir = Path('./csv')
+    figs_savedir = Path('./visualizations')
     # for d in [csv_savedir, figs_savedir]: os.makedirs(d, exist_ok=True)
     
     app.run(host='0.0.0.0', port=80)
