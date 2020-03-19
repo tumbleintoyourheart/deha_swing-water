@@ -92,7 +92,7 @@ def new_scaler():
         scaler_x, scaler_x_name = get_input(files, 'scaler_x')
         scaler_y, scaler_y_name = get_input(files, 'scaler_y')
         
-        save_dir = Path('./')
+        save_dir = ('./')
         
         if scaler_x != None:
             if scaler_x_name != 'scaler_x.pickle': return 'Wrong scaler_x.pickle.'
