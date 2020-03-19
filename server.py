@@ -47,7 +47,7 @@ def renom_init():
         global model
         model[model_id] = init(host, port, model_id)
         
-        return f'Successfully initialized Regressor with model_id={model_id}.'
+        return 'Successfully initialized Regressor with model_id={}.'.format(model_id)
         
     else: return 'Not allowed method.'
     
@@ -101,91 +101,91 @@ def new_scaler():
             save_input(scaler_y, scaler_y_name, save_dir)
         else: return 'scaler_y.pickle is required.'
         
-        return f'{scaler_x_name}, {scaler_y_name}'
+        return '{}, {}'.format(scaler_x_name, scaler_y_name)
         
     else: return 'Not allowed method.'
     
     
     
-@app.route('/ai', methods=['GET', 'POST'])
-def ai():
-    if request.method == 'POST':
-        mode_pred, mode_vis = False, False
-        response = {}
+# @app.route('/ai', methods=['GET', 'POST'])
+# def ai():
+#     if request.method == 'POST':
+#         mode_pred, mode_vis = False, False
+#         response = {}
         
-        values = request.values.to_dict()
+#         values = request.values.to_dict()
 
-        files = request.files.to_dict()
-        csv_pred, csv_pred_name = get_input(files, 'csv_prediction')
-        if csv_pred != None:
-            csv_pred_abspath = save_input(csv_pred, csv_pred_name, csv_savedir)
-            mode_pred = True
-            if 'prediction' not in csv_pred_name: return 'Not legal file for csv_prediction.'
+#         files = request.files.to_dict()
+#         csv_pred, csv_pred_name = get_input(files, 'csv_prediction')
+#         if csv_pred != None:
+#             csv_pred_abspath = save_input(csv_pred, csv_pred_name, csv_savedir)
+#             mode_pred = True
+#             if 'prediction' not in csv_pred_name: return 'Not legal file for csv_prediction.'
         
-        csv_vis, csv_vis_name = get_input(files, 'csv_visual')
-        if csv_vis != None: 
-            csv_vis_abspath = save_input(csv_vis, csv_vis_name, csv_savedir)
-            mode_vis = True
-            if 'visual' not in csv_vis_name: return 'Not legal file for csv_visual.'
+#         csv_vis, csv_vis_name = get_input(files, 'csv_visual')
+#         if csv_vis != None: 
+#             csv_vis_abspath = save_input(csv_vis, csv_vis_name, csv_savedir)
+#             mode_vis = True
+#             if 'visual' not in csv_vis_name: return 'Not legal file for csv_visual.'
         
-        for module in modules:
-            if module == 'sklearn':
-                response['Scikit-learn'] = {'nos': {},
-                                            'std': {}}
+#         for module in modules:
+#             if module == 'sklearn':
+#                 response['Scikit-learn'] = {'nos': {},
+#                                             'std': {}}
                 
-                if sklearn_nos: response['Scikit-learn']['nos']['Model'] = sklearn_default_models[0]
-                if sklearn_std: response['Scikit-learn']['std']['Model'] = sklearn_default_models[1]
+#                 if sklearn_nos: response['Scikit-learn']['nos']['Model'] = sklearn_default_models[0]
+#                 if sklearn_std: response['Scikit-learn']['std']['Model'] = sklearn_default_models[1]
                 
-                if mode_pred:
-                    pred_res = sklearn_pred(Path(csv_pred_abspath), *sklearn_models)
-                    pred_res = [f'{res[0]:.2f} %' for res in pred_res]
-                    if sklearn_nos: response['Scikit-learn']['nos']['Prediction'] = pred_res[0]
-                    if sklearn_std: response['Scikit-learn']['std']['Prediction'] = pred_res[1]
+#                 if mode_pred:
+#                     pred_res = sklearn_pred(Path(csv_pred_abspath), *sklearn_models)
+#                     pred_res = [f'{res[0]:.2f} %' for res in pred_res]
+#                     if sklearn_nos: response['Scikit-learn']['nos']['Prediction'] = pred_res[0]
+#                     if sklearn_std: response['Scikit-learn']['std']['Prediction'] = pred_res[1]
 
-                if mode_vis:
-                    vis_res = sklearn_vis(Path(csv_vis_abspath), figs_savedir, False, *sklearn_models)
-                    if sklearn_nos: response['Scikit-learn']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
-                                                                'R2': vis_res[0][1],
-                                                                'RMSE': vis_res[0][2],
-                                                                'Sorted predictions': vis_res[0][3]}
-                    if sklearn_std: response['Scikit-learn']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
-                                                                'R2': vis_res[1][1],
-                                                                'RMSE': vis_res[1][2],
-                                                                'Sorted predictions': vis_res[1][3]}
+#                 if mode_vis:
+#                     vis_res = sklearn_vis(Path(csv_vis_abspath), figs_savedir, False, *sklearn_models)
+#                     if sklearn_nos: response['Scikit-learn']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
+#                                                                 'R2': vis_res[0][1],
+#                                                                 'RMSE': vis_res[0][2],
+#                                                                 'Sorted predictions': vis_res[0][3]}
+#                     if sklearn_std: response['Scikit-learn']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
+#                                                                 'R2': vis_res[1][1],
+#                                                                 'RMSE': vis_res[1][2],
+#                                                                 'Sorted predictions': vis_res[1][3]}
         
-            elif module == 'tensorflow':
-                response['Tensorflow'] = {'nos': {},
-                                          'std': {}}
+#             elif module == 'tensorflow':
+#                 response['Tensorflow'] = {'nos': {},
+#                                           'std': {}}
                 
-                if tf_nos: response['Tensorflow']['nos']['Model'] = tf_default_models[0]
-                if tf_std: response['Tensorflow']['std']['Model'] = tf_default_models[1]
+#                 if tf_nos: response['Tensorflow']['nos']['Model'] = tf_default_models[0]
+#                 if tf_std: response['Tensorflow']['std']['Model'] = tf_default_models[1]
                 
-                global graph, sess
-                with graph.as_default():
-                    set_session(sess)
+#                 global graph, sess
+#                 with graph.as_default():
+#                     set_session(sess)
                     
-                    if mode_pred:
-                        pred_res = tf_pred(Path(csv_pred_abspath), *tf_models)
-                        pred_res = [f'{res[0][0]:.2f} %' for res in pred_res]
-                        if tf_nos: response['Tensorflow']['nos']['Prediction'] = pred_res[0]
-                        if tf_std: response['Tensorflow']['std']['Prediction'] = pred_res[1]
+#                     if mode_pred:
+#                         pred_res = tf_pred(Path(csv_pred_abspath), *tf_models)
+#                         pred_res = [f'{res[0][0]:.2f} %' for res in pred_res]
+#                         if tf_nos: response['Tensorflow']['nos']['Prediction'] = pred_res[0]
+#                         if tf_std: response['Tensorflow']['std']['Prediction'] = pred_res[1]
                     
-                    if mode_vis:
-                        vis_res = tf_vis(Path(csv_vis_abspath), figs_savedir, False, *tf_models)
-                        if tf_nos: response['Tensorflow']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
-                                                                                     'R2': vis_res[0][1],
-                                                                                     'RMSE': vis_res[0][2],
-                                                                                     'Sorted predictions': vis_res[0][3]}
-                        if tf_std: response['Tensorflow']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
-                                                                                     'R2': vis_res[1][1],
-                                                                                     'RMSE': vis_res[1][2],
-                                                                                     'Sorted predictions': vis_res[1][3]}
+#                     if mode_vis:
+#                         vis_res = tf_vis(Path(csv_vis_abspath), figs_savedir, False, *tf_models)
+#                         if tf_nos: response['Tensorflow']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
+#                                                                                      'R2': vis_res[0][1],
+#                                                                                      'RMSE': vis_res[0][2],
+#                                                                                      'Sorted predictions': vis_res[0][3]}
+#                         if tf_std: response['Tensorflow']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
+#                                                                                      'R2': vis_res[1][1],
+#                                                                                      'RMSE': vis_res[1][2],
+#                                                                                      'Sorted predictions': vis_res[1][3]}
                         
-        return jsonify(response)
+#         return jsonify(response)
                 
         
         
-    else: return 'Not allowed method.'
+#     else: return 'Not allowed method.'
 
 
  
