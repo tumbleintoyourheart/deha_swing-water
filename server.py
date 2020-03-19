@@ -68,20 +68,20 @@ def save_input(inp, inp_name, save_dir):
                 
 
 
-def prediction(regressor, csv_inp, **kwargs):
-    pred_data = pd.read_csv(csv_input)
-    pickle.dump(pred_data, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
-    data = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
+# def prediction(regressor, csv_inp, **kwargs):
+#     pred_data = pd.read_csv(csv_input)
+#     pickle.dump(pred_data, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
+#     data = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
     
-    setsumei_list = list(pred_data.columns)
-    x_col = pd.DataFrame(data, columns=setsumei_list)
+#     setsumei_list = list(pred_data.columns)
+#     x_col = pd.DataFrame(data, columns=setsumei_list)
 
-    scaler_X_standardization = pickle.load(open("./scaler_x.pickle", mode='rb'))
-    scaler_y_standardization = pickle.load(open("./scaler_y.pickle", mode='rb'))
+#     scaler_X_standardization = pickle.load(open("./scaler_x.pickle", mode='rb'))
+#     scaler_y_standardization = pickle.load(open("./scaler_y.pickle", mode='rb'))
     
-    np_x_col = scaler_X_standardization.transform(np.array(x_col))
+#     np_x_col = scaler_X_standardization.transform(np.array(x_col))
     
-    pred = 
+#     pred = 
     
 
 @app.route('/upload_scaler', methods=['GET', 'POST'])
