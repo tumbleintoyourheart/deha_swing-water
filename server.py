@@ -23,11 +23,10 @@ CORS(app)
 def init(host='localhost', port='8080', model_id):
     HOST = host
     PORT = port
-    url = f'http://{HOST}'
+    url = 'http://{}'.format(HOST)
 
     model_id = model_id
-    # deploy_api = url + ':' + PORT + '/api/renom_rg/models/' + model_id + '/deploy'
-    deploy_api = f'{url}:{PORT}/api/renom_rg/models/{model_id}/deploy'
+    deploy_api = url + ':' + PORT + '/api/renom_rg/models/' + model_id + '/deploy'
     requests.post(deploy_api)
 
     regressor = Regressor(url, PORT)
