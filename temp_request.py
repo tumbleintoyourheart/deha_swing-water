@@ -7,4 +7,5 @@ from sklearn import preprocessing
 from renom_rg.api.interface.regressor import Regressor
 
 url = 'http://0.0.0.0:80/'
-requests.post(url)
+res = requests.post(url)
+print(res)
