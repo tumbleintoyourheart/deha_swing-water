@@ -191,10 +191,6 @@ def ai():
 
  
 if __name__ == '__main__':
-    sklearn_path = Path('./module1_sklearn')
-    tf_path = Path('./module2_tf')
-    available_models = [m.name for m in list(sklearn_path.rglob('*.pickle')) if 'scaler' not in m.name] + [m.name for m in list(tf_path.rglob('*.hdf5'))]
-    
     csv_savedir = Path('./csv')
     figs_savedir = Path('./visualizations')
     for d in [csv_savedir, figs_savedir]: os.makedirs(d, exist_ok=True)
