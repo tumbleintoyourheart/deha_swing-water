@@ -6,7 +6,7 @@ import requests
 from sklearn import preprocessing
 from renom_rg.api.interface.regressor import Regressor
 
-url = 'http://0.0.0.0:80/'
+url = 'http://0.0.0.0:80/upload_scaler'
 files = {'scaler_x': open('./scaler_x.pickle', 'rb'),
          'scaler_y': open('./scaler_y.pickle', 'rb')}
 res = requests.post(url, files=files)
