@@ -95,9 +95,11 @@ def new_scaler():
         save_dir = Path('./')
         
         if scaler_x != None:
+            if scaler_x_name != 'scaler_x.pickle': return 'Wrong scaler_x.pickle.'
             save_input(scaler_x, scaler_x_name, save_dir)
         else: return 'scaler_x.pickle is required.'
         if scaler_y != None:
+            if scaler_y_name != 'scaler_y.pickle': return 'Wrong scaler_x.pickle.'
             save_input(scaler_y, scaler_y_name, save_dir)
         else: return 'scaler_y.pickle is required.'
         
