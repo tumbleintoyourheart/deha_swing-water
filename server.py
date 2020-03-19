@@ -192,6 +192,6 @@ def new_scaler():
 if __name__ == '__main__':
     csv_savedir = Path('./csv')
     figs_savedir = Path('./visualizations')
-    for d in [csv_savedir, figs_savedir]: os.makedirs(d, exist_ok=True)
+    # for d in [csv_savedir, figs_savedir]: os.makedirs(d, exist_ok=True)
     
     app.run(host='0.0.0.0', port=80)
