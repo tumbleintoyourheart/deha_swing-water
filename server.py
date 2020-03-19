@@ -20,7 +20,7 @@ app = Flask(__name__)
 CORS(app)
 
 
-def init(host='localhost', port='8080', model_id):
+def init(host='localhost', port='8080', model_id=0):
     HOST = host
     PORT = port
     url = 'http://{}'.format(HOST)
