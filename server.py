@@ -106,7 +106,7 @@ def visualization(regressor, csv_input, mode):
     elif mode == 'std':
         scaler_X_standardization = pickle.load(open("./scaler_x.pickle", mode='rb'))
         scaler_y_standardization = pickle.load(open("./scaler_y.pickle", mode='rb'))
-        np_x_col = scaler_X_standardization.transform(np.array(x_col))
+        np_x_col = scaler_X_standardization.transform(np.array(inp_pred))
         pred = regressor.predict(np_x_col).flatten()
         pred = scaler_y_standardization.inverse_transform(pred)
         pred = [x for _, x in sorted(zip(inp['day'].tolist(), pred.tolist()), key=lambda Zip: Zip[0])]
