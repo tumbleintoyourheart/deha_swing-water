@@ -141,14 +141,14 @@ def ai():
         
         response['Renom'] = {'nos': {},
                              'std': {}}
-            if mode_pred:
-                pred_nos = prediction(regressor, csv_pred_abspath, 'nos')
-                pred_nos = f'{pred_nos[0][0]:.2f} %'
-                response['Renom']['nos']['Prediction'] = pred_nos
-                
-                pred_std = prediction(regressor, csv_pred_abspath, 'std')
-                pred_std = f'{pred_std[0][0]:.2f} %'
-                response['Renom']['std']['Prediction'] = pred_std
+        if mode_pred:
+            pred_nos = prediction(regressor, csv_pred_abspath, 'nos')
+            pred_nos = f'{pred_nos[0][0]:.2f} %'
+            response['Renom']['nos']['Prediction'] = pred_nos
+            
+            pred_std = prediction(regressor, csv_pred_abspath, 'std')
+            pred_std = f'{pred_std[0][0]:.2f} %'
+            response['Renom']['std']['Prediction'] = pred_std
 
             # if mode_vis:
             #     vis_res = sklearn_vis(Path(csv_vis_abspath), figs_savedir, False, *sklearn_models)
