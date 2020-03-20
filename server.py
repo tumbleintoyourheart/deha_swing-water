@@ -90,13 +90,13 @@ def prediction(regressor, csv_input, mode):
 
 
 def visualization(regressor, csv_input, mode):
-    inp = pd.read_csv(csv_inp)
-    inp_data = data.drop(columns=["day", "moisture_per"])
-    pickle.dump(inp_data, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
-    inp_data = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
+    inp = pd.read_csv(csv_input)
+    inp_pred = inp.drop(columns=["day", "moisture_per"])
+    pickle.dump(inp_pred, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
+    inp_pred = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
     
-    setsumei_list = list(pred_data.columns)
-    x_col = pd.DataFrame(data, columns=setsumei_list)
+    setsumei_list = list(inp_pred.columns)
+    x_col = pd.DataFrame(inp, columns=setsumei_list)
     
     if mode == 'nos':
         pred = regressor.predict(np.array(x_col)).flatten()
