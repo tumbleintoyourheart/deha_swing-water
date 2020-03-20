@@ -76,14 +76,14 @@ def prediction(regressor, csv_input, mode):
     x_col = pd.DataFrame(inp, columns=setsumei_list)
     
     if mode == 'nos':
-        pred = regressor.predict(np.array(x_col)).flatten()
+        pred = regressor.predict(np.array(x_col)).flatten().tolist()
         return pred
 
     elif mode == 'std':
         scaler_X_standardization = pickle.load(open("./scaler_x.pickle", mode='rb'))
         scaler_y_standardization = pickle.load(open("./scaler_y.pickle", mode='rb'))
         np_x_col = scaler_X_standardization.transform(np.array(x_col))
-        pred = regressor.predict(np_x_col).flatten()
+        pred = regressor.predict(np_x_col).flatten().tolist()
         pred = scaler_y_standardization.inverse_transform(pred)
         return pred
 
