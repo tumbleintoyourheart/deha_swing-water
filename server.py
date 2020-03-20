@@ -70,7 +70,7 @@ def save_input(inp, inp_name, save_dir):
 
 
 def prediction(regressor, csv_inp, mode):
-    pred_data = pd.read_csv(csv_input)
+    pred_data = pd.read_csv(csv_inp)
     pickle.dump(pred_data, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
     data = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
     
