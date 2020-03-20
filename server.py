@@ -173,7 +173,8 @@ def ai():
             elif mode == 'std':
                 response['Renom']['std'] = {}
                 pred_std = prediction(regressor, csv_pred_abspath, 'std')
-                pred_std = '{:.2f}'.format(pred_std)
+                print(pred_std)
+                # pred_std = '{:.2f}'.format(pred_std)
                 response['Renom']['std']['Prediction'] = pred_std
 
             # if mode_vis:
