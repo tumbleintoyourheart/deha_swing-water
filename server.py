@@ -163,30 +163,30 @@ def ai():
             if 'visual' not in csv_vis_name: return 'Not legal file for csv_visual.'
         
         
-        response['Renom'] = {}
+        response['Renom'] = {'nos': {},
+                             'std': {}}
         if mode_pred:
             if mode == 'nos':
-                response['Renom']['nos'] = {}
                 pred_nos = prediction(regressor, csv_pred_abspath, 'nos')
                 pred_nos = '{:.2f}'.format(pred_nos[0][0])
                 response['Renom']['nos']['Prediction'] = pred_nos
             
             elif mode == 'std':
-                response['Renom']['std'] = {}
                 pred_std = prediction(regressor, csv_pred_abspath, 'std')
                 pred_std = '{:.2f}'.format(pred_std[0][0])
                 response['Renom']['std']['Prediction'] = pred_std
 
-            # if mode_vis:
-            #     vis_res = sklearn_vis(Path(csv_vis_abspath), figs_savedir, False, *sklearn_models)
-            #     if sklearn_nos: response['Scikit-learn']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
-            #                                                 'R2': vis_res[0][1],
-            #                                                 'RMSE': vis_res[0][2],
-            #                                                 'Sorted predictions': vis_res[0][3]}
-            #     if sklearn_std: response['Scikit-learn']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
-            #                                                 'R2': vis_res[1][1],
-            #                                                 'RMSE': vis_res[1][2],
-            #                                                 'Sorted predictions': vis_res[1][3]}
+        if mode_vis:
+            if mode == 'nos':
+                pred_nos = visualization(regressor, csv_vis_abspath, 'nos')
+                print(pred_nos)
+                # pred_nos = '{:.2f}'.format(pred_nos[0][0])
+                # response['Renom']['nos']['Prediction'] = pred_nos
+            
+            # elif mode == 'std':
+            #     pred_std = prediction(regressor, csv_pred_abspath, 'std')
+            #     pred_std = '{:.2f}'.format(pred_std[0][0])
+            #     response['Renom']['std']['Prediction'] = pred_std
                 
         return jsonify(response)
                 
