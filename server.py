@@ -139,7 +139,7 @@ def new_scaler():
     
     
     
-@app.route('/ai', methods=['GET', 'POST'])
+@app.route('/renom_ai', methods=['GET', 'POST'])
 def ai():
     if request.method == 'POST':
         mode_pred, mode_vis = False, False
