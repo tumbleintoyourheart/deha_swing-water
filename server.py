@@ -85,7 +85,7 @@ def prediction(regressor, csv_inp, mode):
         scaler_X_standardization = pickle.load(open("./scaler_x.pickle", mode='rb'))
         scaler_y_standardization = pickle.load(open("./scaler_y.pickle", mode='rb'))
         np_x_col = scaler_X_standardization.transform(np.array(x_col))
-        pred = regressor.pred(np_x_col)
+        pred = regressor.predict(np_x_col)
         pred = scaler_y_standardization.inverse_transform(pred)
         return pred
     
@@ -139,16 +139,19 @@ def ai():
             if 'visual' not in csv_vis_name: return 'Not legal file for csv_visual.'
         
         
-        response['Renom'] = {'nos': {},
-                             'std': {}}
+        response['Renom'] = {}
         if mode_pred:
-            pred_nos = prediction(regressor, csv_pred_abspath, 'nos')
-            pred_nos = '{:.2f}'.format(pred_nos[0][0])
-            response['Renom']['nos']['Prediction'] = pred_nos
+            if mode == 'nos':
+                response['Renom']['nos'] = {}
+                pred_nos = prediction(regressor, csv_pred_abspath, 'nos')
+                pred_nos = '{:.2f}'.format(pred_nos[0][0])
+                response['Renom']['nos']['Prediction'] = pred_nos
             
-            pred_std = prediction(regressor, csv_pred_abspath, 'std')
-            pred_std = '{:.2f}'.format(pred_nos[0][0])
-            response['Renom']['std']['Prediction'] = pred_std
+            elif mode == 'std':
+                response['Renom']['std'] = {}
+                pred_std = prediction(regressor, csv_pred_abspath, 'std')
+                pred_std = '{:.2f}'.format(pred_nos[0][0])
+                response['Renom']['std']['Prediction'] = pred_std
 
             # if mode_vis:
             #     vis_res = sklearn_vis(Path(csv_vis_abspath), figs_savedir, False, *sklearn_models)
