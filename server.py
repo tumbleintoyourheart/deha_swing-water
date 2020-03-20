@@ -35,7 +35,6 @@ def init(host='localhost', port='8080', model_id=0):
 
 
 
-
 @app.route('/renom_init', methods=['GET', 'POST'])
 def renom_init():
     if request.method == 'POST':
@@ -53,7 +52,6 @@ def renom_init():
     
 
 
-
 def get_input(files, key):
     if files.get(key):
         inp = files[key]
@@ -69,26 +67,51 @@ def save_input(inp, inp_name, save_dir):
                 
 
 
-def prediction(regressor, csv_inp, mode):
-    pred_data = pd.read_csv(csv_inp)
-    pickle.dump(pred_data, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
-    data = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
+def prediction(regressor, csv_input, mode):
+    inp = pd.read_csv(csv_input)
+    pickle.dump(inp, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
+    inp = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
     
-    setsumei_list = list(pred_data.columns)
-    x_col = pd.DataFrame(data, columns=setsumei_list)
+    setsumei_list = list(inp.columns)
+    x_col = pd.DataFrame(inp, columns=setsumei_list)
     
     if mode == 'nos':
-        pred = regressor.predict(np.array(x_col))
+        pred = regressor.predict(np.array(x_col)).flatten()
         return pred
 
     elif mode == 'std':
         scaler_X_standardization = pickle.load(open("./scaler_x.pickle", mode='rb'))
         scaler_y_standardization = pickle.load(open("./scaler_y.pickle", mode='rb'))
         np_x_col = scaler_X_standardization.transform(np.array(x_col))
-        pred = regressor.predict(np_x_col)
+        pred = regressor.predict(np_x_col).flatten()
         pred = scaler_y_standardization.inverse_transform(pred)
         return pred
+
+
+
+# def visualization(regressor, csv_input, mode):
+#     inp = pd.read_csv(csv_inp)
+#     inp_data = data.drop(columns=["day", "moisture_per"])
+#     pickle.dump(inp_data, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
+#     inp_data = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
     
+#     setsumei_list = list(pred_data.columns)
+#     x_col = pd.DataFrame(data, columns=setsumei_list)
+    
+#     if mode == 'nos':
+#         pred = regressor.predict(np.array(x_col)).flatten()
+#         pred = [x for _, x in sorted(zip(inp['day'].tolist(), pred.tolist()), key=lambda Zip: Zip[0])]
+#         return pred
+
+#     elif mode == 'std':
+#         scaler_X_standardization = pickle.load(open("./scaler_x.pickle", mode='rb'))
+#         scaler_y_standardization = pickle.load(open("./scaler_y.pickle", mode='rb'))
+#         np_x_col = scaler_X_standardization.transform(np.array(x_col))
+#         pred = regressor.predict(np_x_col)
+#         pred = scaler_y_standardization.inverse_transform(pred)
+#         return pred
+    
+
 
 @app.route('/upload_scaler', methods=['GET', 'POST'])
 def new_scaler():
