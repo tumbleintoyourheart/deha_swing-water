@@ -143,11 +143,11 @@ def ai():
                              'std': {}}
         if mode_pred:
             pred_nos = prediction(regressor, csv_pred_abspath, 'nos')
-            pred_nos = f'{pred_nos[0][0]:.2f} %'
+            pred_nos = '{:.2f}'.format(pred_nos[0][0])
             response['Renom']['nos']['Prediction'] = pred_nos
             
             pred_std = prediction(regressor, csv_pred_abspath, 'std')
-            pred_std = f'{pred_std[0][0]:.2f} %'
+            pred_std = '{:.2f}'.format(pred_nos[0][0])
             response['Renom']['std']['Prediction'] = pred_std
 
             # if mode_vis:
