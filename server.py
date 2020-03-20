@@ -76,40 +76,41 @@ def prediction(regressor, csv_input, mode):
     x_col = pd.DataFrame(inp, columns=setsumei_list)
     
     if mode == 'nos':
-        pred = regressor.predict(np.array(x_col)).flatten().tolist()
+        pred = regressor.predict(np.array(x_col))
         return pred
 
     elif mode == 'std':
         scaler_X_standardization = pickle.load(open("./scaler_x.pickle", mode='rb'))
         scaler_y_standardization = pickle.load(open("./scaler_y.pickle", mode='rb'))
         np_x_col = scaler_X_standardization.transform(np.array(x_col))
-        pred = regressor.predict(np_x_col).flatten().tolist()
+        pred = regressor.predict(np_x_col)
         pred = scaler_y_standardization.inverse_transform(pred)
         return pred
 
 
 
-# def visualization(regressor, csv_input, mode):
-#     inp = pd.read_csv(csv_inp)
-#     inp_data = data.drop(columns=["day", "moisture_per"])
-#     pickle.dump(inp_data, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
-#     inp_data = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
+def visualization(regressor, csv_input, mode):
+    inp = pd.read_csv(csv_inp)
+    inp_data = data.drop(columns=["day", "moisture_per"])
+    pickle.dump(inp_data, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
+    inp_data = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
     
-#     setsumei_list = list(pred_data.columns)
-#     x_col = pd.DataFrame(data, columns=setsumei_list)
+    setsumei_list = list(pred_data.columns)
+    x_col = pd.DataFrame(data, columns=setsumei_list)
     
-#     if mode == 'nos':
-#         pred = regressor.predict(np.array(x_col)).flatten()
-#         pred = [x for _, x in sorted(zip(inp['day'].tolist(), pred.tolist()), key=lambda Zip: Zip[0])]
-#         return pred
+    if mode == 'nos':
+        pred = regressor.predict(np.array(x_col)).flatten()
+        pred = [x for _, x in sorted(zip(inp['day'].tolist(), pred.tolist()), key=lambda Zip: Zip[0])]
+        return pred
 
-#     elif mode == 'std':
-#         scaler_X_standardization = pickle.load(open("./scaler_x.pickle", mode='rb'))
-#         scaler_y_standardization = pickle.load(open("./scaler_y.pickle", mode='rb'))
-#         np_x_col = scaler_X_standardization.transform(np.array(x_col))
-#         pred = regressor.predict(np_x_col)
-#         pred = scaler_y_standardization.inverse_transform(pred)
-#         return pred
+    elif mode == 'std':
+        scaler_X_standardization = pickle.load(open("./scaler_x.pickle", mode='rb'))
+        scaler_y_standardization = pickle.load(open("./scaler_y.pickle", mode='rb'))
+        np_x_col = scaler_X_standardization.transform(np.array(x_col))
+        pred = regressor.predict(np_x_col).flatten()
+        pred = scaler_y_standardization.inverse_transform(pred)
+        pred = [x for _, x in sorted(zip(inp['day'].tolist(), pred.tolist()), key=lambda Zip: Zip[0])]
+        return pred
     
 
 
@@ -167,14 +168,13 @@ def ai():
             if mode == 'nos':
                 response['Renom']['nos'] = {}
                 pred_nos = prediction(regressor, csv_pred_abspath, 'nos')
-                pred_nos = '{:.2f}'.format(pred_nos)
+                pred_nos = '{:.2f}'.format(pred_nos[0][0])
                 response['Renom']['nos']['Prediction'] = pred_nos
             
             elif mode == 'std':
                 response['Renom']['std'] = {}
                 pred_std = prediction(regressor, csv_pred_abspath, 'std')
-                print(type(pred_std))
-                # pred_std = '{:.2f}'.format(pred_std)
+                pred_std = '{:.2f}'.format(pred_std[0][0])
                 response['Renom']['std']['Prediction'] = pred_std
 
             # if mode_vis:
