@@ -182,7 +182,7 @@ def ai():
                 response['Renom']['nos']['Sorted predictions'] = pred_nos
             
             elif mode == 'std':
-                pred_std = prediction(regressor, csv_pred_abspath, 'std')
+                pred_std = prediction(regressor, csv_vis_abspath, 'std')
                 response['Renom']['std']['Sorted predictions'] = pred_std
                 
         return jsonify(response)
