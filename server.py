@@ -179,11 +179,11 @@ def ai():
         if mode_vis:
             if mode == 'nos':
                 pred_nos = visualization(regressor, csv_vis_abspath, 'nos')
-                response['Renom']['nos']['Sorted predictions'] = pred_nos
+                response['Renom']['nos']['Visualization'] = {'Sorted predictions': pred_nos}
             
             elif mode == 'std':
                 pred_std = visualization(regressor, csv_vis_abspath, 'std')
-                response['Renom']['std']['Sorted predictions'] = pred_std
+                response['Renom']['std']['Visualization'] = {'Sorted predictions': pred_std}
                 
         return jsonify(response)
                 
