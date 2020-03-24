@@ -110,7 +110,8 @@ def ai():
         if values.get('models'):
             models = values['models'].replace(' ', '').split(',')
             for m in models:
-                if re.search(r'sk\w*nos.pickle', m): sklearn_default_models[0] = m; modules.add('sklearn'); sklearn_nos = True
+                if m not in available_models: return f'Not available models. Please choose from: {available_models}.'
+                elif re.search(r'sk\w*nos.pickle', m): sklearn_default_models[0] = m; modules.add('sklearn'); sklearn_nos = True
                 elif re.search(r'sk\w*std.pickle', m): sklearn_default_models[1] = m; modules.add('sklearn'); sklearn_std = True
                 elif re.search(r'tf\w*nos.hdf5', m): tf_default_models[0] = m; modules.add('tensorflow'); tf_nos = True
                 elif re.search(r'tf\w*std.hdf5', m): tf_default_models[1] = m; modules.add('tensorflow'); tf_std = True
