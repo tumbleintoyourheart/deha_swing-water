@@ -169,7 +169,7 @@ def ai():
         
         # init models
         sklearn_scaler = pickle.load(open(sklearn_path/'models'/'scaler.pickle', 'rb'))
-        sklearn_models [sklearn_scaler, sklearn_nos_model, sklearn_std_model]
+        sklearn_models = [sklearn_scaler, sklearn_nos_model, sklearn_std_model]
         
         tf_scaler = pickle.load(open(tf_path/'models'/'scaler.pickle', 'rb'))
         tf_models = [tf_scaler, tf_nos_model, tf_std_model]
