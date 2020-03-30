@@ -185,7 +185,7 @@ def ai():
                 if tf_nos: response['Tensorflow']['nos']['Model'] = tf_nos_model_name
                 if tf_std: response['Tensorflow']['std']['Model'] = tf_std_model_name
                 
-                global graph, sess
+                # global graph, sess
                 with graph.as_default():
                     set_session(sess)
                     
