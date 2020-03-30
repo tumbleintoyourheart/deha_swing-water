@@ -36,7 +36,10 @@ sklearn_default_models = ['200310_atg_dsp_sk_rf_nos.pickle', '200310_atg_dsp_sk_
 tf_default_models = ['200310_atg_dsp_tf_nn_nos.hdf5', '200310_atg_dsp_tf_nn_std.hdf5']
 
 def init(sklearn_defaults=sklearn_default_models, tf_defaults=tf_default_models):
-    sklearn_scaler = [pickle.load(open(sklearn_path/'models'/'scaler.pickle', 'rb'))]
+    try:
+        sklearn_scaler = [pickle.load(open(sklearn_path/'models'/'scaler.pickle', 'rb'))]
+    except:
+        pass
     sklearn_models = []
     for model_name in sklearn_defaults:
         try:
@@ -47,7 +50,10 @@ def init(sklearn_defaults=sklearn_default_models, tf_defaults=tf_default_models)
     
     sklearn_models = sklearn_scaler + sklearn_models
     
-    tf_scaler = [pickle.load(open(tf_path/'models'/'scaler.pickle', 'rb'))]
+    try:
+        tf_scaler = [pickle.load(open(tf_path/'models'/'scaler.pickle', 'rb'))]
+    except:
+        pass
     global graph, sess
     sess = tf.Session()
     graph = tf.get_default_graph()
