@@ -30,15 +30,18 @@ deprecation._PRINT_DEPRECATION_WARNINGS = False
 
 
 
-def predict(csv_input, scaler, model1, model2):
+def predict(csv_input, model_modes, scaler, model1, model2):
     inp = pd.read_csv(csv_input)
+    if 'nos' in model_modes:
+        pred_unnormed = model1.predict(inp)
+        print(f'nos: {pred_unnormed}.')
+    else: pred_unnormed = None
     
-    pred_unnormed = model1.predict(inp)
-    print(f'nos: {pred_unnormed}.')
-
-    inp = scaler.transform(inp)
-    pred_normed = model2.predict(inp)
-    print(f'std: {pred_normed}.')
+    if 'std' in model_modes:
+        inp = scaler.transform(inp)
+        pred_normed = model2.predict(inp)
+        print(f'std: {pred_normed}.')
+    else: pred_normed = None
 
     return pred_unnormed, pred_normed
 

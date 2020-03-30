@@ -19,14 +19,12 @@ for w in [UserWarning, FutureWarning, DeprecationWarning]:
 
 
 def visualize(csv_input, model_modes, figs_savedir, show, scaler, model1, model2):
+    inp = pd.read_csv(csv_input)
+    inp_pred = inp.drop(columns=["day", "moisture_per"])
     if 'nos' in model_modes:
         '''
         Unnormalized
         '''
-        inp = pd.read_csv(csv_input)
-        # sorted_inp_day = sorted(, reverse=True)
-        inp_pred = inp.drop(columns=["day", "moisture_per"])
-
         unnormed_pred = model1.predict(inp_pred)
         
         unnormed_res = [x for _, x in sorted(zip(inp['day'].tolist(), unnormed_pred.tolist()), key=lambda Zip: Zip[0])]
@@ -49,8 +47,6 @@ def visualize(csv_input, model_modes, figs_savedir, show, scaler, model1, model2
         '''
         Normalized
         '''
-        inp = pd.read_csv(csv_input)
-        inp_pred = inp.drop(columns=["day", "moisture_per"])
         inp_pred = scaler.transform(inp_pred)
 
         normed_pred = model2.predict(inp_pred)

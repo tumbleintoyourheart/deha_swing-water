@@ -178,21 +178,24 @@ def ai():
                 response['Tensorflow'] = {'nos': {},
                                           'std': {}}
                 
-                if tf_nos: response['Tensorflow']['nos']['Model'] = tf_default_models[0]
-                if tf_std: response['Tensorflow']['std']['Model'] = tf_default_models[1]
+                if tf_nos: response['Tensorflow']['nos']['Model'] = tf_nos_model_name
+                if tf_std: response['Tensorflow']['std']['Model'] = tf_std_model_name
                 
                 global graph, sess
                 with graph.as_default():
                     set_session(sess)
                     
                     if mode_pred:
-                        pred_res = tf_pred(Path(csv_pred_abspath), *tf_models)
-                        pred_res = [f'{res[0][0]:.2f} %' for res in pred_res]
+                        pred_res = tf_pred(Path(csv_pred_abspath), model_modes, *tf_models)
+                        def beautify(res): 
+                            if res != None: return f'{res[0][0]:.2f} %'
+                            else: return res
+                        pred_res = list(map(beautify, pred_res))
                         if tf_nos: response['Tensorflow']['nos']['Prediction'] = pred_res[0]
                         if tf_std: response['Tensorflow']['std']['Prediction'] = pred_res[1]
                     
                     if mode_vis:
-                        vis_res = tf_vis(Path(csv_vis_abspath), figs_savedir, False, *tf_models)
+                        vis_res = tf_vis(Path(csv_vis_abspath), model_modes, figs_savedir, False, *tf_models)
                         if tf_nos: response['Tensorflow']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
                                                                                      'R2': vis_res[0][1],
                                                                                      'RMSE': vis_res[0][2],
