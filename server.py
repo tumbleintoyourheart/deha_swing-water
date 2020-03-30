@@ -199,7 +199,10 @@ def ai():
                 if mode_pred:
                     print('mode_pred')
                     pred_res = sklearn_pred(Path(csv_pred_abspath), model_modes, *sklearn_models)
-                    pred_res = list(map(lambda x: f'{res[0]:.2f} %' if (res != None), pred_res))
+                    def beautify(res): 
+                        if res != None: return f'{res[0]:.2f} %'
+                        else: return res
+                    pred_res = list(map(beautify, pred_res))
                     # pred_res = [f'{res[0]:.2f} %' for res in pred_res if res != None]
                     if sklearn_nos: response['Scikit-learn']['nos']['Prediction'] = pred_res[0]
                     if sklearn_std: response['Scikit-learn']['std']['Prediction'] = pred_res[1]
