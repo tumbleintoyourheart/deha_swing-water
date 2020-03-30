@@ -43,7 +43,7 @@ def visualize(csv_input, model_modes, figs_savedir, show, scaler, model1, model2
         unnormed_rmse = round(np.sqrt(mean_squared_error(inp["moisture_per"], unnormed_pred)), 2)
         print(f'R2: {unnormed_r2}')
         print(f'RMSE: {unnormed_rmse}')
-    else: unnormed_pred, unnormed_savepath, unnormed_r2, unnormed_rmse = None, None, None, None
+    else: unnormed_res, unnormed_savepath, unnormed_r2, unnormed_rmse = None, None, None, None
 
     if 'std' in model_modes:
         '''
@@ -69,7 +69,7 @@ def visualize(csv_input, model_modes, figs_savedir, show, scaler, model1, model2
         normed_rmse = round(np.sqrt(mean_squared_error(inp["moisture_per"], normed_pred)), 2)
         print(f'R2: {normed_r2}')
         print(f'RMSE: {normed_rmse}')
-    else: normed_pred, normed_savepath, normed_r2, normed_rmse = None, None, None, None
+    else: normed_res, normed_savepath, normed_r2, normed_rmse = None, None, None, None
     
     return (unnormed_savepath, unnormed_r2, unnormed_rmse, unnormed_res), (normed_savepath, normed_r2, normed_rmse, normed_res)
     

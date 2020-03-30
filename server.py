@@ -31,48 +31,7 @@ deprecation._PRINT_DEPRECATION_WARNINGS = False
 app = Flask(__name__)
 CORS(app)
 
-        
-sklearn_default_models = ['200310_atg_dsp_sk_rf_nos.pickle', '200310_atg_dsp_sk_rf_std.pickle']
-tf_default_models = ['200310_atg_dsp_tf_nn_nos.hdf5', '200310_atg_dsp_tf_nn_std.hdf5']
 
-def init(sklearn_defaults=sklearn_default_models, tf_defaults=tf_default_models):
-    try:
-        sklearn_scaler = [pickle.load(open(sklearn_path/'models'/'scaler.pickle', 'rb'))]
-    except:
-        sklearn_scaler = None
-    sklearn_models = []
-    for model_name in sklearn_defaults:
-        try:
-            model = pickle.load(open(sklearn_path/'models'/model_name, 'rb'))
-            sklearn_models.append(model)
-        except:
-            pass
-    
-    if sklearn_scaler != None:
-        sklearn_models = sklearn_scaler + sklearn_models
-    
-    try:
-        tf_scaler = [pickle.load(open(tf_path/'models'/'scaler.pickle', 'rb'))]
-    except:
-        tf_scaler = None
-    global graph, sess
-    sess = tf.Session()
-    graph = tf.get_default_graph()
-    set_session(sess)
-    tf_models = []
-    for model_name in tf_defaults:
-        try:
-            model = load_model(tf_path/'models'/model_name)
-            tf_models.append(model)
-        except:
-            pass
-    
-    if tf_scaler != None:
-        tf_models = tf_scaler + tf_models
-    
-    return sklearn_models, tf_models
-  
-    
 
 def get_input(files, key):
     if files.get(key):
@@ -164,18 +123,17 @@ def ai():
                     tf_std_model_name = m
                 else: return f'Not available models. Please choose from: {available_models}.'
         else: return 'Please specify models to use.'
-        print(model_modes)
 
         
         # init models
         sklearn_scaler = pickle.load(open(sklearn_path/'models'/'scaler.pickle', 'rb'))
         sklearn_models = [sklearn_scaler, sklearn_nos_model, sklearn_std_model]
-        
         tf_scaler = pickle.load(open(tf_path/'models'/'scaler.pickle', 'rb'))
         tf_models = [tf_scaler, tf_nos_model, tf_std_model]
         
+        
+        # files
         files = request.files.to_dict()
-        print(files)
         csv_pred, csv_pred_name = get_input(files, 'csv_prediction')
         if csv_pred != None:
             csv_pred_abspath = save_input(csv_pred, csv_pred_name, csv_savedir)
