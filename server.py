@@ -122,6 +122,7 @@ def ai():
     if request.method == 'POST':
         mode_pred, mode_vis = False, False
         response = {}
+        model_modes = set()
         
         
         values = request.values.to_dict()
@@ -136,18 +137,30 @@ def ai():
             
             for m in models:
                 if m not in available_models: return f'Not available models. Please choose from: {available_models}.'
-                elif re.search(r'sk\w*nos.pickle', m): sklearn_default_models[0] = m; modules.add('sklearn'); sklearn_nos = True
-                elif re.search(r'sk\w*std.pickle', m): sklearn_default_models[1] = m; modules.add('sklearn'); sklearn_std = True
-                elif re.search(r'tf\w*nos.hdf5', m): tf_default_models[0] = m; modules.add('tensorflow'); tf_nos = True
-                elif re.search(r'tf\w*std.hdf5', m): tf_default_models[1] = m; modules.add('tensorflow'); tf_std = True
+                elif re.search(r'sk\w*nos.pickle', m):
+                    sklearn_nos = True
+                    model_modes.add('nos')
+                    sklearn_nos_model = pickle.load(open(sklearn_path/'models'/m, 'rb'))
+                elif re.search(r'sk\w*std.pickle', m):
+                    sklearn_std = True
+                    model_modes.add('std')
+                    sklearn_std_model = pickle.load(open(sklearn_path/'models'/m, 'rb'))
+                elif re.search(r'tf\w*nos.hdf5', m):
+                    tf_nos = True
+                    model_modes.add('nos')
+                    tf_nos_model = load_model(tf_path/'models'/m)
+                elif re.search(r'tf\w*std.hdf5', m):
+                    tf_std = True
+                    model_modes.add('std')
+                    tf_std_model = load_model(tf_path/'models'/m)
                 else: return f'Not available models. Please choose from: {available_models}.'
         else: return 'Please specify models to use.'
         
-        print(sklearn_default_models, tf_default_models)
+
         
         # init models
-        sklearn_models, tf_models = init()
-        
+        sklearn_scaler = pickle.load(open(sklearn_path/'models'/'scaler.pickle', 'rb'))
+        tf_scaler = pickle.load(open(tf_path/'models'/'scaler.pickle', 'rb'))
         
         files = request.files.to_dict()
         csv_pred, csv_pred_name = get_input(files, 'csv_prediction')
@@ -167,11 +180,11 @@ def ai():
                 response['Scikit-learn'] = {'nos': {},
                                             'std': {}}
                 
-                if sklearn_nos: response['Scikit-learn']['nos']['Model'] = sklearn_default_models[0]
-                if sklearn_std: response['Scikit-learn']['std']['Model'] = sklearn_default_models[1]
+                if sklearn_nos: response['Scikit-learn']['nos']['Model'] = sklearn_nos_model
+                if sklearn_std: response['Scikit-learn']['std']['Model'] = sklearn_std_model
                 
                 if mode_pred:
-                    pred_res = sklearn_pred(Path(csv_pred_abspath), *sklearn_models)
+                    pred_res = sklearn_pred(Path(csv_pred_abspath), model_modes, *sklearn_models)
                     pred_res = [f'{res[0]:.2f} %' for res in pred_res]
                     if sklearn_nos: response['Scikit-learn']['nos']['Prediction'] = pred_res[0]
                     if sklearn_std: response['Scikit-learn']['std']['Prediction'] = pred_res[1]

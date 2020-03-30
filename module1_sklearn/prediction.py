@@ -19,36 +19,38 @@ for w in [UserWarning, FutureWarning, DeprecationWarning]:
 
 
 
-def predict(csv_input, scaler, model1, model2):
-    '''
-    Unnormalized
-    '''
-    #予測用の影響・制御因子データ読み込み
-    inp = pd.read_csv(csv_input)
+def predict(csv_input, model_modes, scaler, model1, model2):
+    if 'nos' in model_modes:
+        '''
+        Unnormalized
+        '''
+        #予測用の影響・制御因子データ読み込み
+        inp = pd.read_csv(csv_input)
 
-    #AIモデルファイルのロード
-    # model1 = pickle.load(open('rf_model.pickle', mode='rb'))
+        #AIモデルファイルのロード
+        # model1 = pickle.load(open('rf_model.pickle', mode='rb'))
 
-    #予測実行
-    pred_unnormed = model1.predict(inp)
-    print(f'nos: {pred_unnormed}.')
+        #予測実行
+        pred_unnormed = model1.predict(inp)
+        print(f'nos: {pred_unnormed}.')
+    else: pred_unnormed = None
 
+    if 'std' in model_modes:
+        '''
+        Normalized
+        '''
+        inp = pd.read_csv(csv_input)
+        
+        #標準化データのロードと標準化の実行
+        # scaler = pickle.load(open("scaler.pickle", "rb"))
+        inp = scaler.transform(inp)
 
-    '''
-    Normalized
-    '''
-    inp = pd.read_csv(csv_input)
-    
-    #標準化データのロードと標準化の実行
-    # scaler = pickle.load(open("scaler.pickle", "rb"))
-    inp = scaler.transform(inp)
+        #AIモデルファイルのロード
+        # model2 = pickle.load(open('rfstd_model.pickle', mode='rb'))
 
-    #AIモデルファイルのロード
-    # model2 = pickle.load(open('rfstd_model.pickle', mode='rb'))
-
-    #予測実行
-    pred_normed = model2.predict(inp)
-    print(f'std: {pred_normed}.')
+        #予測実行
+        pred_normed = model2.predict(inp)
+        print(f'std: {pred_normed}.')
     
     return pred_unnormed, pred_normed
     
