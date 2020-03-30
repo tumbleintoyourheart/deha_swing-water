@@ -139,18 +139,22 @@ def ai():
                 if m not in available_models: return f'Not available models. Please choose from: {available_models}.'
                 elif re.search(r'sk\w*nos.pickle', m):
                     sklearn_nos = True
+                    modules.add('sklearn')
                     model_modes.add('nos')
                     sklearn_nos_model = pickle.load(open(sklearn_path/'models'/m, 'rb'))
                 elif re.search(r'sk\w*std.pickle', m):
                     sklearn_std = True
+                    modules.add('sklearn')
                     model_modes.add('std')
                     sklearn_std_model = pickle.load(open(sklearn_path/'models'/m, 'rb'))
                 elif re.search(r'tf\w*nos.hdf5', m):
                     tf_nos = True
+                    modules.add('tensorflow')
                     model_modes.add('nos')
                     tf_nos_model = load_model(tf_path/'models'/m)
                 elif re.search(r'tf\w*std.hdf5', m):
                     tf_std = True
+                    modules.add('tensorflow')
                     model_modes.add('std')
                     tf_std_model = load_model(tf_path/'models'/m)
                 else: return f'Not available models. Please choose from: {available_models}.'
