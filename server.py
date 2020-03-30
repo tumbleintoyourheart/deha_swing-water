@@ -171,6 +171,7 @@ def ai():
         tf_scaler = pickle.load(open(tf_path/'models'/'scaler.pickle', 'rb'))
         
         files = request.files.to_dict()
+        print(files)
         csv_pred, csv_pred_name = get_input(files, 'csv_prediction')
         if csv_pred != None:
             csv_pred_abspath = save_input(csv_pred, csv_pred_name, csv_savedir)
@@ -192,6 +193,7 @@ def ai():
                 if sklearn_std: response['Scikit-learn']['std']['Model'] = sklearn_std_model_name
                 
                 if mode_pred:
+                    print('mode_pred')
                     pred_res = sklearn_pred(Path(csv_pred_abspath), model_modes, *sklearn_models)
                     pred_res = [f'{res[0]:.2f} %' for res in pred_res]
                     if sklearn_nos: response['Scikit-learn']['nos']['Prediction'] = pred_res[0]
