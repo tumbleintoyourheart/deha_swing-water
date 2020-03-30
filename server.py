@@ -37,6 +37,7 @@ tf_default_models = ['200310_atg_dsp_tf_nn_nos.hdf5', '200310_atg_dsp_tf_nn_std.
 
 def init(sklearn_defaults=sklearn_default_models, tf_defaults=tf_default_models):
     sklearn_scaler = [pickle.load(open(sklearn_path/'models'/'scaler.pickle', 'rb'))]
+    sklearn_models = []
     for model_name in sklearn_defaults:
         try:
             model = pickle.load(open(sklearn_path/'models'/model_name, 'rb'))
