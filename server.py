@@ -86,7 +86,7 @@ def ai():
         
         values = request.values.to_dict()
         
-        global sklearn_default_models, tf_default_models
+        # init models
         sklearn_nos, sklearn_std, tf_nos, tf_std = False, False, False, False
         modules = set()
         if values.get('models'):
@@ -95,6 +95,10 @@ def ai():
             available_models = [m.name for m in list(sklearn_path.rglob('*.pickle')) if 'scaler' not in m.name] + [m.name for m in list(tf_path.rglob('*.hdf5'))]
             
             sklearn_nos_model, sklearn_std_model, tf_nos_model, tf_std_model = None, None, None, None
+            global graph, sess
+            sess = tf.Session()
+            graph = tf.get_default_graph()
+            set_session(sess)
             for m in models:
                 if m not in available_models: return f'Not available models. Please choose from: {available_models}.'
                 elif re.search(r'sk\w*nos.pickle', m):
@@ -125,7 +129,7 @@ def ai():
         else: return 'Please specify models to use.'
 
         
-        # init models
+        # init scalers
         sklearn_scaler = pickle.load(open(sklearn_path/'models'/'scaler.pickle', 'rb'))
         sklearn_models = [sklearn_scaler, sklearn_nos_model, sklearn_std_model]
         tf_scaler = pickle.load(open(tf_path/'models'/'scaler.pickle', 'rb'))
