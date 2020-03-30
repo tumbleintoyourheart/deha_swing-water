@@ -142,21 +142,25 @@ def ai():
                     modules.add('sklearn')
                     model_modes.add('nos')
                     sklearn_nos_model = pickle.load(open(sklearn_path/'models'/m, 'rb'))
+                    sklearn_nos_model_name = m
                 elif re.search(r'sk\w*std.pickle', m):
                     sklearn_std = True
                     modules.add('sklearn')
                     model_modes.add('std')
                     sklearn_std_model = pickle.load(open(sklearn_path/'models'/m, 'rb'))
+                    sklearn_std_model_name = m
                 elif re.search(r'tf\w*nos.hdf5', m):
                     tf_nos = True
                     modules.add('tensorflow')
                     model_modes.add('nos')
                     tf_nos_model = load_model(tf_path/'models'/m)
+                    tf_nos_model_name = m
                 elif re.search(r'tf\w*std.hdf5', m):
                     tf_std = True
                     modules.add('tensorflow')
                     model_modes.add('std')
                     tf_std_model = load_model(tf_path/'models'/m)
+                    tf_std_model_name = m
                 else: return f'Not available models. Please choose from: {available_models}.'
         else: return 'Please specify models to use.'
         print(model_modes)
@@ -184,8 +188,8 @@ def ai():
                 response['Scikit-learn'] = {'nos': {},
                                             'std': {}}
                 
-                if sklearn_nos: response['Scikit-learn']['nos']['Model'] = sklearn_nos_model
-                if sklearn_std: response['Scikit-learn']['std']['Model'] = sklearn_std_model
+                if sklearn_nos: response['Scikit-learn']['nos']['Model'] = sklearn_nos_model_name
+                if sklearn_std: response['Scikit-learn']['std']['Model'] = sklearn_std_model_name
                 
                 if mode_pred:
                     pred_res = sklearn_pred(Path(csv_pred_abspath), model_modes, *sklearn_models)
