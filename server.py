@@ -39,7 +39,7 @@ def init(sklearn_defaults=sklearn_default_models, tf_defaults=tf_default_models)
     try:
         sklearn_scaler = [pickle.load(open(sklearn_path/'models'/'scaler.pickle', 'rb'))]
     except:
-        pass
+        sklearn_scaler = None
     sklearn_models = []
     for model_name in sklearn_defaults:
         try:
@@ -48,12 +48,13 @@ def init(sklearn_defaults=sklearn_default_models, tf_defaults=tf_default_models)
         except:
             pass
     
-    sklearn_models = sklearn_scaler + sklearn_models
+    if sklearn_scaler != None:
+        sklearn_models = sklearn_scaler + sklearn_models
     
     try:
         tf_scaler = [pickle.load(open(tf_path/'models'/'scaler.pickle', 'rb'))]
     except:
-        pass
+        tf_scaler = None
     global graph, sess
     sess = tf.Session()
     graph = tf.get_default_graph()
@@ -65,7 +66,9 @@ def init(sklearn_defaults=sklearn_default_models, tf_defaults=tf_default_models)
             tf_models.append(model)
         except:
             pass
-    tf_models = tf_scaler + tf_models
+    
+    if tf_scaler != None:
+        tf_models = tf_scaler + tf_models
     
     return sklearn_models, tf_models
   
