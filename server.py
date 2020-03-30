@@ -37,7 +37,13 @@ tf_default_models = ['200310_atg_dsp_tf_nn_nos.hdf5', '200310_atg_dsp_tf_nn_std.
 
 def init(sklearn_defaults=sklearn_default_models, tf_defaults=tf_default_models):
     sklearn_scaler = [pickle.load(open(sklearn_path/'models'/'scaler.pickle', 'rb'))]
-    sklearn_models = [pickle.load(open(sklearn_path/'models'/model_name, 'rb')) for model_name in sklearn_defaults]
+    for model_name in sklearn_defaults:
+        try:
+            model = pickle.load(open(sklearn_path/'models'/model_name, 'rb'))
+            sklearn_models.append(model)
+        except:
+            pass
+    
     sklearn_models = sklearn_scaler + sklearn_models
     
     tf_scaler = [pickle.load(open(tf_path/'models'/'scaler.pickle', 'rb'))]
@@ -109,6 +115,7 @@ def ai():
         modules = set()
         if values.get('models'):
             models = values['models'].replace(' ', '').split(',')
+            print(models)
             available_models = [m.name for m in list(sklearn_path.rglob('*.pickle')) if 'scaler' not in m.name] + [m.name for m in list(tf_path.rglob('*.hdf5'))]
             
             for m in models:
@@ -120,6 +127,7 @@ def ai():
                 else: return f'Not available models. Please choose from: {available_models}.'
         else: return 'Please specify models to use.'
         
+        print(sklearn_default_models, tf_default_models)
         
         # init models
         sklearn_models, tf_models = init()
