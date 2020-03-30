@@ -109,6 +109,8 @@ def ai():
         modules = set()
         if values.get('models'):
             models = values['models'].replace(' ', '').split(',')
+            available_models = [m.name for m in list(sklearn_path.rglob('*.pickle')) if 'scaler' not in m.name] + [m.name for m in list(tf_path.rglob('*.hdf5'))]
+            
             for m in models:
                 if m not in available_models: return f'Not available models. Please choose from: {available_models}.'
                 elif re.search(r'sk\w*nos.pickle', m): sklearn_default_models[0] = m; modules.add('sklearn'); sklearn_nos = True
@@ -200,7 +202,7 @@ def ai():
 if __name__ == '__main__':
     sklearn_path = Path('./module1_sklearn')
     tf_path = Path('./module2_tf')
-    available_models = [m.name for m in list(sklearn_path.rglob('*.pickle')) if 'scaler' not in m.name] + [m.name for m in list(tf_path.rglob('*.hdf5'))]
+    
     
     csv_savedir = Path('./csv')
     figs_savedir = Path('./visualizations')
