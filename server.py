@@ -155,7 +155,7 @@ def ai():
                     tf_std_model = load_model(tf_path/'models'/m)
                 else: return f'Not available models. Please choose from: {available_models}.'
         else: return 'Please specify models to use.'
-        
+        print(model_modes)
 
         
         # init models
