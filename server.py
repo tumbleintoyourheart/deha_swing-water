@@ -135,6 +135,7 @@ def ai():
             print(models)
             available_models = [m.name for m in list(sklearn_path.rglob('*.pickle')) if 'scaler' not in m.name] + [m.name for m in list(tf_path.rglob('*.hdf5'))]
             
+            sklearn_nos_model, sklearn_std_model, tf_nos_model, tf_std_model = None, None, None, None
             for m in models:
                 if m not in available_models: return f'Not available models. Please choose from: {available_models}.'
                 elif re.search(r'sk\w*nos.pickle', m):
@@ -168,7 +169,10 @@ def ai():
         
         # init models
         sklearn_scaler = pickle.load(open(sklearn_path/'models'/'scaler.pickle', 'rb'))
+        sklearn_models [sklearn_scaler, sklearn_nos_model, sklearn_std_model]
+        
         tf_scaler = pickle.load(open(tf_path/'models'/'scaler.pickle', 'rb'))
+        tf_models = [tf_scaler, tf_nos_model, tf_std_model]
         
         files = request.files.to_dict()
         print(files)
