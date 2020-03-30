@@ -52,7 +52,13 @@ def init(sklearn_defaults=sklearn_default_models, tf_defaults=tf_default_models)
     sess = tf.Session()
     graph = tf.get_default_graph()
     set_session(sess)
-    tf_models = [load_model(tf_path/'models'/model_name) for model_name in tf_defaults]
+    tf_models = []
+    for model_name in tf_defaults:
+        try:
+            model = load_model(tf_path/'models'/model_name)
+            tf_models.append(model)
+        except:
+            pass
     tf_models = tf_scaler + tf_models
     
     return sklearn_models, tf_models
