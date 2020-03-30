@@ -197,18 +197,16 @@ def ai():
                 if sklearn_std: response['Scikit-learn']['std']['Model'] = sklearn_std_model_name
                 
                 if mode_pred:
-                    print('mode_pred')
                     pred_res = sklearn_pred(Path(csv_pred_abspath), model_modes, *sklearn_models)
                     def beautify(res): 
                         if res != None: return f'{res[0]:.2f} %'
                         else: return res
                     pred_res = list(map(beautify, pred_res))
-                    # pred_res = [f'{res[0]:.2f} %' for res in pred_res if res != None]
                     if sklearn_nos: response['Scikit-learn']['nos']['Prediction'] = pred_res[0]
                     if sklearn_std: response['Scikit-learn']['std']['Prediction'] = pred_res[1]
 
                 if mode_vis:
-                    vis_res = sklearn_vis(Path(csv_vis_abspath), figs_savedir, False, *sklearn_models)
+                    vis_res = sklearn_vis(Path(csv_vis_abspath), model_modes, figs_savedir, False, *sklearn_models)
                     if sklearn_nos: response['Scikit-learn']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
                                                                 'R2': vis_res[0][1],
                                                                 'RMSE': vis_res[0][2],

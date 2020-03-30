@@ -18,53 +18,56 @@ for w in [UserWarning, FutureWarning, DeprecationWarning]:
     warnings.filterwarnings("ignore", category=w)
 
 
-def visualize(csv_input, figs_savedir, show, scaler, model1, model2):
-    '''
-    Unnormalized
-    '''
-    inp = pd.read_csv(csv_input)
-    # sorted_inp_day = sorted(, reverse=True)
-    inp_pred = inp.drop(columns=["day", "moisture_per"])
+def visualize(csv_input, models_modes, figs_savedir, show, scaler, model1, model2):
+    if 'nos' in model_modes:
+        '''
+        Unnormalized
+        '''
+        inp = pd.read_csv(csv_input)
+        # sorted_inp_day = sorted(, reverse=True)
+        inp_pred = inp.drop(columns=["day", "moisture_per"])
 
-    unnormed_pred = model1.predict(inp_pred)
-    
-    unnormed_res = [x for _, x in sorted(zip(inp['day'].tolist(), unnormed_pred.tolist()), key=lambda Zip: Zip[0])]
-    
-    plt.figure(0)
-    plt.scatter(inp["moisture_per"], unnormed_pred)
-    unnormed_savepath = figs_savedir/'sklearn_no_visualization.png'
-    plt.savefig(unnormed_savepath)
-    if show:
-        plt.show()
-        plt.clf()
+        unnormed_pred = model1.predict(inp_pred)
+        
+        unnormed_res = [x for _, x in sorted(zip(inp['day'].tolist(), unnormed_pred.tolist()), key=lambda Zip: Zip[0])]
+        
+        plt.figure(0)
+        plt.scatter(inp["moisture_per"], unnormed_pred)
+        unnormed_savepath = figs_savedir/'sklearn_no_visualization.png'
+        plt.savefig(unnormed_savepath)
+        if show:
+            plt.show()
+            plt.clf()
 
-    unnormed_r2 = round(r2_score(inp["moisture_per"], unnormed_pred), 2)
-    unnormed_rmse = round(np.sqrt(mean_squared_error(inp["moisture_per"], unnormed_pred)), 2)
-    print(f'R2: {unnormed_r2}')
-    print(f'RMSE: {unnormed_rmse}')
+        unnormed_r2 = round(r2_score(inp["moisture_per"], unnormed_pred), 2)
+        unnormed_rmse = round(np.sqrt(mean_squared_error(inp["moisture_per"], unnormed_pred)), 2)
+        print(f'R2: {unnormed_r2}')
+        print(f'RMSE: {unnormed_rmse}')
+    else: unnormed_pred, unnormed_savepath, unnormed_r2, unnormed_rmse = None, None, None, None
 
+    if 'std' in model_modes:
+        '''
+        Normalized
+        '''
+        inp_pred = scaler.transform(inp_pred)
 
-    '''
-    Normalized
-    '''
-    inp_pred = scaler.transform(inp_pred)
+        normed_pred = model2.predict(inp_pred)
 
-    normed_pred = model2.predict(inp_pred)
+        normed_res = [x for _, x in sorted(zip(inp['day'].tolist(), normed_pred.tolist()), key=lambda Zip: Zip[0])]
+        
+        plt.figure(1)
+        plt.scatter(inp["moisture_per"], normed_pred)
+        normed_savepath = figs_savedir/'sklearn_std_visualization.png'
+        plt.savefig(normed_savepath)
+        if show:
+            plt.show()
+            plt.clf()
 
-    normed_res = [x for _, x in sorted(zip(inp['day'].tolist(), normed_pred.tolist()), key=lambda Zip: Zip[0])]
-    
-    plt.figure(1)
-    plt.scatter(inp["moisture_per"], normed_pred)
-    normed_savepath = figs_savedir/'sklearn_std_visualization.png'
-    plt.savefig(normed_savepath)
-    if show:
-        plt.show()
-        plt.clf()
-
-    normed_r2 = round(r2_score(inp["moisture_per"], normed_pred), 2)
-    normed_rmse = round(np.sqrt(mean_squared_error(inp["moisture_per"], normed_pred)), 2)
-    print(f'R2: {normed_r2}')
-    print(f'RMSE: {normed_rmse}')
+        normed_r2 = round(r2_score(inp["moisture_per"], normed_pred), 2)
+        normed_rmse = round(np.sqrt(mean_squared_error(inp["moisture_per"], normed_pred)), 2)
+        print(f'R2: {normed_r2}')
+        print(f'RMSE: {normed_rmse}')
+    else: normed_pred, normed_savepath, normed_r2, normed_rmse = None, None, None, None
     
     return (unnormed_savepath, unnormed_r2, unnormed_rmse, unnormed_res), (normed_savepath, normed_r2, normed_rmse, normed_res)
     
