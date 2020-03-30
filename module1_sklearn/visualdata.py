@@ -49,6 +49,7 @@ def visualize(csv_input, model_modes, figs_savedir, show, scaler, model1, model2
         '''
         Normalized
         '''
+        inp = pd.read_csv(csv_input)
         inp_pred = scaler.transform(inp_pred)
 
         normed_pred = model2.predict(inp_pred)
