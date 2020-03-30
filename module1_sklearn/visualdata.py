@@ -18,7 +18,7 @@ for w in [UserWarning, FutureWarning, DeprecationWarning]:
     warnings.filterwarnings("ignore", category=w)
 
 
-def visualize(csv_input, models_modes, figs_savedir, show, scaler, model1, model2):
+def visualize(csv_input, model_modes, figs_savedir, show, scaler, model1, model2):
     if 'nos' in model_modes:
         '''
         Unnormalized
