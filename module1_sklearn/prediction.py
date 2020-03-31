@@ -37,7 +37,7 @@ def predict(csv_input, model_modes, scaler, model1, model2):
         inp = scaler.transform(inp)
         pred_normed = model2.predict(inp)
         print(f'std: {pred_normed}.')
-    
+    else: pred_normed = None
     return pred_unnormed, pred_normed
     
 if __name__ == '__main__':
