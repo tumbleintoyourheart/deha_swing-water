@@ -55,27 +55,32 @@ def save_input(inp, inp_name, save_dir):
 @app.route('/upload_model', methods=['GET', 'POST'])
 def new_model():
     if request.method == 'POST':
-        files = request.files.to_dict()
+        # values
+        values = request.values.to_dict()
+        device_id = values.get('device_id')
+        if device_id == None: return f'Please specify device_id.'
         
+        # files
+        files = request.files.to_dict()
         model, model_name = get_input(files, 'model')
         scaler, scaler_name = get_input(files, 'scaler')
         
+        # cases
         if model == None: return 'Please specify a model to upload.'
         
         if [('std' in model_name), scaler != None].count(True) == 1:
             return 'std model and scaler must come together. Please make sure to upload both.'
         
         if 'sk' in model_name:
-            save_dir = sklearn_path/'models'
+            save_dir = sklearn_path/'models'/device_id
             save_input(model, model_name, save_dir)
             if scaler != None: save_input(scaler, scaler_name, save_dir)
         elif 'tf' in model_name:
-            save_dir = tf_path/'models'
+            save_dir = tf_path/'models'/device_id
             save_input(model, model_name, save_dir)
             if scaler != None: save_input(scaler, scaler_name, save_dir)
 
         return f'{model_name}'
-        
     else: return 'Not allowed method.'
     
     
@@ -83,66 +88,72 @@ def new_model():
 @app.route('/ai', methods=['GET', 'POST'])
 def ai():
     if request.method == 'POST':
-        mode_pred, mode_vis = False, False
         response = {}
         model_modes = set()
         
         
+        # values
         values = request.values.to_dict()
+        device_id = values.get('device_id')
+        if device_id == None: return f'Please specify device_id.'
+        
         
         # init models
         sklearn_nos, sklearn_std, tf_nos, tf_std = False, False, False, False
+        sklearn_nos_model, sklearn_std_model, tf_nos_model, tf_std_model = None, None, None, None
         modules = set()
+        available_models = [m.name for m in list((sklearn_path/'models'/device_id).rglob('*.pickle')) if 'scaler' not in m.name] + [m.name for m in list((tf_path/'models'/device_id).rglob('*.hdf5'))]
+        
         if values.get('models'):
             models = values['models'].replace(' ', '').split(',')
-            print(models)
-            available_models = [m.name for m in list(sklearn_path.rglob('*.pickle')) if 'scaler' not in m.name] + [m.name for m in list(tf_path.rglob('*.hdf5'))]
             
-            sklearn_nos_model, sklearn_std_model, tf_nos_model, tf_std_model = None, None, None, None
             global graph, sess
             sess = tf.Session()
             graph = tf.get_default_graph()
             set_session(sess)
             for m in models:
-                if m not in available_models: return f'Not available models. Please choose from: {available_models}.'
+                if m not in available_models: return f'Not available models. Current available models for device_id {device_id}: {available_models}.'
                 elif re.search(r'sk\w*nos.pickle', m):
                     sklearn_nos = True
                     modules.add('sklearn')
                     model_modes.add('nos')
-                    sklearn_nos_model = pickle.load(open(sklearn_path/'models'/m, 'rb'))
+                    sklearn_nos_model = pickle.load(open(sklearn_path/'models'/device_id/m, 'rb'))
                     sklearn_nos_model_name = m
                 elif re.search(r'sk\w*std.pickle', m):
                     sklearn_std = True
                     modules.add('sklearn')
                     model_modes.add('std')
-                    sklearn_std_model = pickle.load(open(sklearn_path/'models'/m, 'rb'))
+                    sklearn_std_model = pickle.load(open(sklearn_path/'models'/device_id/m, 'rb'))
                     sklearn_std_model_name = m
                 elif re.search(r'tf\w*nos.hdf5', m):
                     tf_nos = True
                     modules.add('tensorflow')
                     model_modes.add('nos')
-                    tf_nos_model = load_model(tf_path/'models'/m)
+                    tf_nos_model = load_model(tf_path/'models'/device_id/m)
                     tf_nos_model_name = m
                 elif re.search(r'tf\w*std.hdf5', m):
                     tf_std = True
                     modules.add('tensorflow')
                     model_modes.add('std')
-                    tf_std_model = load_model(tf_path/'models'/m)
+                    tf_std_model = load_model(tf_path/'models'/device_id/m)
                     tf_std_model_name = m
                 else: return f'Not available models. Please choose from: {available_models}.'
         else: return 'Please specify models to use.'
 
         
         # init scalers
-        sklearn_scaler = pickle.load(open(sklearn_path/'models'/'scaler.pickle', 'rb'))
-        sklearn_models = [sklearn_scaler, sklearn_nos_model, sklearn_std_model]
-        tf_scaler = pickle.load(open(tf_path/'models'/'scaler.pickle', 'rb'))
-        tf_models = [tf_scaler, tf_nos_model, tf_std_model]
+        if 'sklearn' in modules:
+            sklearn_scaler = pickle.load(open(sklearn_path/'models'/device_id/'scaler.pickle', 'rb'))
+            sklearn_models = [sklearn_scaler, sklearn_nos_model, sklearn_std_model]
+        if 'tensorflow' in modules:
+            tf_scaler = pickle.load(open(tf_path/'models'/device_id/'scaler.pickle', 'rb'))
+            tf_models = [tf_scaler, tf_nos_model, tf_std_model]
         
         
         # files
         files = request.files.to_dict()
         csv_pred, csv_pred_name = get_input(files, 'csv_prediction')
+        mode_pred, mode_vis = False, False
         if csv_pred != None:
             csv_pred_abspath = save_input(csv_pred, csv_pred_name, csv_savedir)
             mode_pred = True
