@@ -63,7 +63,8 @@ def new_model():
         # files
         files = request.files.to_dict()
         model, model_name = get_input(files, 'model')
-        scaler, scaler_name = get_input(files, 'scaler')
+        scaler, _ = get_input(files, 'scaler')
+        
         
         # cases
         if model == None: return 'Please specify a model to upload.'
@@ -71,6 +72,7 @@ def new_model():
         if [('std' in model_name), scaler != None].count(True) == 1:
             return 'std model and scaler must come together. Please make sure to upload both.'
         
+        scaler_name = f'scaler_of_{model_name.split(".")[0]}.pickle'
         if 'sk' in model_name:
             save_dir = sklearn_path/'models'/device_id
             save_input(model, model_name, save_dir)
@@ -143,10 +145,18 @@ def ai():
         
         # init scalers
         if 'sklearn' in modules:
-            sklearn_scaler = pickle.load(open(sklearn_path/'models'/device_id/'scaler.pickle', 'rb'))
+            if sklearn_std:
+                sklearn_scaler_path = sklearn_path/'models'/device_id/f'scaler_of_{sklearn_std_model_name.split(".")[0]}.pickle'
+                if not os.path.isfile(sklearn_scaler_path): return f'scaler_of_{sklearn_std_model_name.split(".")[0]}.pickle not found.'
+                sklearn_scaler = pickle.load(open(sklearn_scaler_path, 'rb'))
+            else: sklearn_scaler = None
             sklearn_models = [sklearn_scaler, sklearn_nos_model, sklearn_std_model]
         if 'tensorflow' in modules:
-            tf_scaler = pickle.load(open(tf_path/'models'/device_id/'scaler.pickle', 'rb'))
+            if tf_std:
+                tf_scaler_path = tf_path/'models'/device_id/f'scaler_of_{tf_std_model_name.split(".")[0]}.pickle'
+                if not os.path.isfile(tf_scaler_path): return f'scaler_of_{tf_std_model_name.split(".")[0]}.pickle not found.'
+                tf_scaler = pickle.load(open(tf_scaler_path, 'rb'))
+            else: tf_scaler = None
             tf_models = [tf_scaler, tf_nos_model, tf_std_model]
         
         
