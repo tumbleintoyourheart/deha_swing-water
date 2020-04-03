@@ -67,7 +67,7 @@ def save_input(inp, inp_name, save_dir):
                 
 
 
-def prediction(regressor, csv_input, mode):
+def prediction(device_id, regressor, csv_input, mode):
     inp = pd.read_csv(csv_input)
     pickle.dump(inp, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
     inp = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
@@ -80,8 +80,8 @@ def prediction(regressor, csv_input, mode):
         return pred
 
     elif mode == 'std':
-        scaler_X_standardization = pickle.load(open("./scaler_x.pickle", mode='rb'))
-        scaler_y_standardization = pickle.load(open("./scaler_y.pickle", mode='rb'))
+        scaler_X_standardization = pickle.load(open("./{}/scaler_x.pickle".format(device_id), mode='rb'))
+        scaler_y_standardization = pickle.load(open("./{}/scaler_y.pickle".format(device_id), mode='rb'))
         np_x_col = scaler_X_standardization.transform(np.array(x_col))
         pred = regressor.predict(np_x_col)
         pred = scaler_y_standardization.inverse_transform(pred)
@@ -89,7 +89,7 @@ def prediction(regressor, csv_input, mode):
 
 
 
-def visualization(regressor, csv_input, mode):
+def visualization(device_id, regressor, csv_input, mode):
     inp = pd.read_csv(csv_input)
     inp_pred = inp.drop(columns=["day", "moisture_per"])
     pickle.dump(inp_pred, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
@@ -104,8 +104,8 @@ def visualization(regressor, csv_input, mode):
         return pred
 
     elif mode == 'std':
-        scaler_X_standardization = pickle.load(open("./scaler_x.pickle", mode='rb'))
-        scaler_y_standardization = pickle.load(open("./scaler_y.pickle", mode='rb'))
+        scaler_X_standardization = pickle.load(open("./{}/scaler_x.pickle".format(device_id), mode='rb'))
+        scaler_y_standardization = pickle.load(open("./{}/scaler_y.pickle".format(device_id), mode='rb'))
         np_x_col = scaler_X_standardization.transform(np.array(x_col))
         pred = regressor.predict(np_x_col).flatten()
         pred = scaler_y_standardization.inverse_transform(pred)
@@ -117,24 +117,29 @@ def visualization(regressor, csv_input, mode):
 @app.route('/upload_scaler', methods=['GET', 'POST'])
 def new_scaler():
     if request.method == 'POST':
-        files = request.files.to_dict()
+        # values
+        values = request.values.to_dict()
+        device_id = values.get('device_id')
+        if device_id == None: return 'Please specify device_id.'
         
+        # files
+        files = request.files.to_dict()
         scaler_x, scaler_x_name = get_input(files, 'scaler_x')
         scaler_y, scaler_y_name = get_input(files, 'scaler_y')
         
-        save_dir = ('./')
+        save_dir = ('./{}').format(device_id)
         
         if scaler_x != None:
             if scaler_x_name != 'scaler_x.pickle': return 'Wrong scaler_x.pickle.'
             save_input(scaler_x, scaler_x_name, save_dir)
         else: return 'scaler_x.pickle is required.'
+        
         if scaler_y != None:
             if scaler_y_name != 'scaler_y.pickle': return 'Wrong scaler_x.pickle.'
             save_input(scaler_y, scaler_y_name, save_dir)
         else: return 'scaler_y.pickle is required.'
         
         return '{}, {}'.format(scaler_x_name, scaler_y_name)
-        
     else: return 'Not allowed method.'
     
     
@@ -142,15 +147,21 @@ def new_scaler():
 @app.route('/renom_ai', methods=['GET', 'POST'])
 def ai():
     if request.method == 'POST':
-        mode_pred, mode_vis = False, False
         response = {}
         
+        # values
         values = request.values.to_dict()
-        model_id = values.get('model_id'); regressor = models[model_id]
+        
+        device_id = values.get('device_id')
+        if device_id == None: return 'Please specify device_id.'
+        
+        model_id = values.get('model_id')
+        regressor = models[model_id]
         mode = values.get('mode')
 
         files = request.files.to_dict()
         csv_pred, csv_pred_name = get_input(files, 'csv_prediction')
+        mode_pred, mode_vis = False, False
         if csv_pred != None:
             csv_pred_abspath = save_input(csv_pred, csv_pred_name, csv_savedir)
             mode_pred = True
@@ -167,22 +178,22 @@ def ai():
                              'std': {}}
         if mode_pred:
             if mode == 'nos':
-                pred_nos = prediction(regressor, csv_pred_abspath, 'nos')
+                pred_nos = prediction(device_id, regressor, csv_pred_abspath, 'nos')
                 pred_nos = '{:.2f} %'.format(pred_nos[0][0])
                 response['Renom']['nos']['Prediction'] = pred_nos
             
             elif mode == 'std':
-                pred_std = prediction(regressor, csv_pred_abspath, 'std')
+                pred_std = prediction(device_id, regressor, csv_pred_abspath, 'std')
                 pred_std = '{:.2f} %'.format(pred_std[0][0])
                 response['Renom']['std']['Prediction'] = pred_std
 
         if mode_vis:
             if mode == 'nos':
-                pred_nos = visualization(regressor, csv_vis_abspath, 'nos')
+                pred_nos = visualization(device_id, regressor, csv_vis_abspath, 'nos')
                 response['Renom']['nos']['Visualization'] = {'Sorted predictions': pred_nos}
             
             elif mode == 'std':
-                pred_std = visualization(regressor, csv_vis_abspath, 'std')
+                pred_std = visualization(device_id, regressor, csv_vis_abspath, 'std')
                 response['Renom']['std']['Visualization'] = {'Sorted predictions': pred_std}
                 
         return jsonify(response)
