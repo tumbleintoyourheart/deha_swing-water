@@ -67,7 +67,7 @@ def save_input(inp, inp_name, save_dir):
                 
 
 
-def prediction(device_id, regressor, csv_input, mode):
+def prediction(device_id, regressor, scaler_x_path, scaler_y_path, csv_input, mode):
     inp = pd.read_csv(csv_input)
     pickle.dump(inp, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
     inp = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
@@ -80,8 +80,8 @@ def prediction(device_id, regressor, csv_input, mode):
         return pred
 
     elif mode == 'std':
-        scaler_X_standardization = pickle.load(open("./{}/scaler_x.pickle".format(device_id), mode='rb'))
-        scaler_y_standardization = pickle.load(open("./{}/scaler_y.pickle".format(device_id), mode='rb'))
+        scaler_X_standardization = pickle.load(open(scaler_x_path, mode='rb'))
+        scaler_y_standardization = pickle.load(open(scaler_y_path, mode='rb'))
         np_x_col = scaler_X_standardization.transform(np.array(x_col))
         pred = regressor.predict(np_x_col)
         pred = scaler_y_standardization.inverse_transform(pred)
@@ -89,7 +89,7 @@ def prediction(device_id, regressor, csv_input, mode):
 
 
 
-def visualization(device_id, regressor, csv_input, mode):
+def visualization(device_id, regressor, scaler_x_path, scaler_y_path, csv_input, mode):
     inp = pd.read_csv(csv_input)
     inp_pred = inp.drop(columns=["day", "moisture_per"])
     pickle.dump(inp_pred, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
@@ -104,8 +104,8 @@ def visualization(device_id, regressor, csv_input, mode):
         return pred
 
     elif mode == 'std':
-        scaler_X_standardization = pickle.load(open("./{}/scaler_x.pickle".format(device_id), mode='rb'))
-        scaler_y_standardization = pickle.load(open("./{}/scaler_y.pickle".format(device_id), mode='rb'))
+        scaler_X_standardization = pickle.load(open(scaler_x_path, mode='rb'))
+        scaler_y_standardization = pickle.load(open(scaler_y_path, mode='rb'))
         np_x_col = scaler_X_standardization.transform(np.array(x_col))
         pred = regressor.predict(np_x_col).flatten()
         pred = scaler_y_standardization.inverse_transform(pred)
@@ -119,6 +119,8 @@ def new_scaler():
     if request.method == 'POST':
         # values
         values = request.values.to_dict()
+        model_id = values.get('model_id')
+        if model_id == None: return 'Please specify model_id.'
         device_id = values.get('device_id')
         if device_id == None: return 'Please specify device_id.'
         
@@ -126,16 +128,18 @@ def new_scaler():
         files = request.files.to_dict()
         scaler_x, scaler_x_name = get_input(files, 'scaler_x')
         scaler_y, scaler_y_name = get_input(files, 'scaler_y')
-        
         save_dir = ('./{}').format(device_id)
         
+        # cases
         if scaler_x != None:
             if scaler_x_name != 'scaler_x.pickle': return 'Wrong scaler_x.pickle.'
+            scaler_x_name = 'scaler_x_of_model_id_{}.pickle'.format(model_id)
             save_input(scaler_x, scaler_x_name, save_dir)
         else: return 'scaler_x.pickle is required.'
         
         if scaler_y != None:
             if scaler_y_name != 'scaler_y.pickle': return 'Wrong scaler_x.pickle.'
+            scaler_y_name = 'scaler_y_of_model_id_{}.pickle'.format(model_id)
             save_input(scaler_y, scaler_y_name, save_dir)
         else: return 'scaler_y.pickle is required.'
         
@@ -152,14 +156,7 @@ def ai():
         # values
         values = request.values.to_dict()
         
-        device_id = values.get('device_id')
-        if device_id == None: return 'Please specify device_id.'
-        
-        if not os.path.isfile('./{}/scaler_x.pickle'.format(device_id)):
-            return 'scaler_x.pickle not found for device_id {}'.format(device_id)
-        if not os.path.isfile('./{}/scaler_y.pickle'.format(device_id)):
-            return 'scaler_y.pickle not found for device_id {}'.format(device_id)
-        
+        # model
         model_id = values.get('model_id')
         try:
             regressor = models[model_id]
@@ -167,6 +164,21 @@ def ai():
             tb = traceback.format_exc()
             print(tb)
             return 'Init regressor first.'
+        
+        device_id = values.get('device_id')
+        if device_id == None: return 'Please specify device_id.'
+        
+        # scalers
+        scaler_x_path = './{}/scaler_x_of_model_id_{}.pickle'.format(device_id, model_id)
+        if not os.path.isfile(scaler_x_path):
+            return 'scaler_x.pickle not found for device_id {}'.format(device_id)
+        
+        scaler_y_path = './{}/scaler_y_of_model_id_{}.pickle'.format(device_id, model_id)
+        if not os.path.isfile(scaler_y_path):
+            return 'scaler_y.pickle not found for device_id {}'.format(device_id)
+        
+        scalers_path = [scaler_x_path, scaler_y_path]
+        
         mode = values.get('mode')
 
         files = request.files.to_dict()
@@ -189,7 +201,7 @@ def ai():
         if mode_pred:
             if mode == 'nos':
                 try:
-                    pred_nos = prediction(device_id, regressor, csv_pred_abspath, 'nos')
+                    pred_nos = prediction(device_id, regressor, *scalers_path, csv_pred_abspath, 'nos')
                 except Exception as e:
                     tb = traceback.format_exc()
                     print(tb)
@@ -200,7 +212,7 @@ def ai():
             
             elif mode == 'std':
                 try:
-                    pred_std = prediction(device_id, regressor, csv_pred_abspath, 'std')
+                    pred_std = prediction(device_id, regressor, *scalers_path, csv_pred_abspath, 'std')
                 except Exception as e:
                     tb = traceback.format_exc()
                     print(tb)
@@ -211,11 +223,11 @@ def ai():
 
         if mode_vis:
             if mode == 'nos':
-                pred_nos = visualization(device_id, regressor, csv_vis_abspath, 'nos')
+                pred_nos = visualization(device_id, regressor, *scalers_path, csv_vis_abspath, 'nos')
                 response['Renom']['nos']['Visualization'] = {'Sorted predictions': pred_nos}
             
             elif mode == 'std':
-                pred_std = visualization(device_id, regressor, csv_vis_abspath, 'std')
+                pred_std = visualization(device_id, regressor, *scalers_path, csv_vis_abspath, 'std')
                 response['Renom']['std']['Visualization'] = {'Sorted predictions': pred_std}
                 
         return jsonify(response)
