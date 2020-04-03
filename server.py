@@ -156,9 +156,9 @@ def ai():
         if device_id == None: return 'Please specify device_id.'
         
         if not os.path.isfile('./{}/scaler_x.pickle'.format(device_id)):
-            return 'scaler_x.pickle not found for {}'.format(device_id)
+            return 'scaler_x.pickle not found for device_id {}'.format(device_id)
         if not os.path.isfile('./{}/scaler_y.pickle'.format(device_id)):
-            return 'scaler_y.pickle not found for {}'.format(device_id)
+            return 'scaler_y.pickle not found for device_id {}'.format(device_id)
         
         model_id = values.get('model_id')
         regressor = models[model_id]
