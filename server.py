@@ -161,7 +161,12 @@ def ai():
             return 'scaler_y.pickle not found for device_id {}'.format(device_id)
         
         model_id = values.get('model_id')
-        regressor = models[model_id]
+        try:
+            regressor = models[model_id]
+        except Exception as e:
+            tb = traceback.format_exc()
+            print(tb)
+            return 'Init regressor first.'
         mode = values.get('mode')
 
         files = request.files.to_dict()
@@ -183,12 +188,24 @@ def ai():
                              'std': {}}
         if mode_pred:
             if mode == 'nos':
-                pred_nos = prediction(device_id, regressor, csv_pred_abspath, 'nos')
+                try:
+                    pred_nos = prediction(device_id, regressor, csv_pred_abspath, 'nos')
+                except Exception as e:
+                    tb = traceback.format_exc()
+                    print(tb)
+                    tb = tb.split('\n')[-2]
+                    return jsonify(Error=tb)
                 pred_nos = '{:.2f} %'.format(pred_nos[0][0])
                 response['Renom']['nos']['Prediction'] = pred_nos
             
             elif mode == 'std':
-                pred_std = prediction(device_id, regressor, csv_pred_abspath, 'std')
+                try:
+                    pred_std = prediction(device_id, regressor, csv_pred_abspath, 'std')
+                except Exception as e:
+                    tb = traceback.format_exc()
+                    print(tb)
+                    tb = tb.split('\n')[-2]
+                    return jsonify(Error=tb)
                 pred_std = '{:.2f} %'.format(pred_std[0][0])
                 response['Renom']['std']['Prediction'] = pred_std
 
