@@ -163,7 +163,13 @@ def ai():
                 if sklearn_std: response['Scikit-learn']['std']['Model'] = sklearn_std_model_name
                 
                 if mode_pred:
-                    pred_res = sklearn_pred(Path(csv_pred_abspath), model_modes, *sklearn_models)
+                    try:
+                        pred_res = sklearn_pred(Path(csv_pred_abspath), model_modes, *sklearn_models)
+                    except Exception as e:
+                        tb = traceback.format_exc()
+                        print(tb)
+                        tb = tb.split('\n')[-2]
+                        return jsonify(Error=tb)
                     def beautify(res): 
                         if res != None: return f'{res[0]:.2f} %'
                         else: return res
@@ -172,7 +178,13 @@ def ai():
                     if sklearn_std: response['Scikit-learn']['std']['Prediction'] = pred_res[1]
 
                 if mode_vis:
-                    vis_res = sklearn_vis(Path(csv_vis_abspath), model_modes, figs_savedir, False, *sklearn_models)
+                    try:
+                        vis_res = sklearn_vis(Path(csv_vis_abspath), model_modes, figs_savedir, False, *sklearn_models)
+                    except Exception as e:
+                        tb = traceback.format_exc()
+                        print(tb)
+                        tb = tb.split('\n')[-2]
+                        return jsonify(Error=tb)
                     if sklearn_nos: response['Scikit-learn']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
                                                                 'R2': vis_res[0][1],
                                                                 'RMSE': vis_res[0][2],
