@@ -120,6 +120,7 @@ def new_scaler():
         # values
         values = request.values.to_dict()
         device_id = values.get('device_id')
+        print(device_id)
         if device_id == None: return 'Please specify device_id.'
         
         # files
