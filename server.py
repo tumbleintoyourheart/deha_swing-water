@@ -27,6 +27,10 @@ os.environ['KMP_WARNINGS'] = '0'
 from tensorflow.python.util import deprecation
 deprecation._PRINT_DEPRECATION_WARNINGS = False
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--port', '-p', type=int, default=5000)
+
 
 app = Flask(__name__)
 CORS(app)
@@ -218,6 +222,8 @@ def ai():
 
  
 if __name__ == '__main__':
+    args = parser.parse_args()
+    
     sklearn_path = Path('./module1_sklearn')
     tf_path = Path('./module2_tf')
     
@@ -226,4 +232,4 @@ if __name__ == '__main__':
     figs_savedir = Path('./visualizations')
     for d in [csv_savedir, figs_savedir]: os.makedirs(d, exist_ok=True)
     
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=args.port)
