@@ -120,7 +120,6 @@ def new_scaler():
         # values
         values = request.values.to_dict()
         device_id = values.get('device_id')
-        print(device_id)
         if device_id == None: return 'Please specify device_id.'
         
         # files
@@ -155,6 +154,11 @@ def ai():
         
         device_id = values.get('device_id')
         if device_id == None: return 'Please specify device_id.'
+        
+        if not os.path.isfile('./{}/scaler_x.pickle'.format(device_id)):
+            return 'scaler_x.pickle not found for {}'.format(device_id)
+        if not os.path.isfile('./{}/scaler_y.pickle'.format(device_id)):
+            return 'scaler_y.pickle not found for {}'.format(device_id)
         
         model_id = values.get('model_id')
         regressor = models[model_id]
