@@ -47,7 +47,7 @@ def renom_init():
         try:
             models[model_id] = init(host, port, model_id)
         except Exception as e:
-            return 'Unable to pull model_id {}.'.format(model_id)
+            return jsonify(Error='Unable to pull model_id {}.'.format(model_id))
         
         return 'Successfully initialized Regressor with model_id={}.'.format(model_id)
         
@@ -166,7 +166,7 @@ def ai():
         except Exception as e:
             tb = traceback.format_exc()
             print(tb)
-            return 'Init model first.'
+            return jsonify(Error='Init model first.')
         
         device_id = values.get('device_id')
         if device_id == None: return 'Please specify device_id.'
