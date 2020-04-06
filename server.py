@@ -226,11 +226,23 @@ def ai():
 
         if mode_vis:
             if mode == 'nos':
-                pred_nos = visualization(device_id, regressor, *scalers_path, csv_vis_abspath, 'nos')
+                try:
+                    pred_nos = visualization(device_id, regressor, *scalers_path, csv_vis_abspath, 'nos')
+                except Exception as e:
+                    tb = traceback.format_exc()
+                    print(tb)
+                    tb = tb.split('\n')[-2]
+                    return jsonify(Error=tb)
                 response['Renom']['nos']['Visualization'] = {'Sorted predictions': pred_nos}
             
             elif mode == 'std':
-                pred_std = visualization(device_id, regressor, *scalers_path, csv_vis_abspath, 'std')
+                try:
+                    pred_std = visualization(device_id, regressor, *scalers_path, csv_vis_abspath, 'std')
+                except Exception as e:
+                    tb = traceback.format_exc()
+                    print(tb)
+                    tb = tb.split('\n')[-2]
+                    return jsonify(Error=tb)
                 response['Renom']['std']['Visualization'] = {'Sorted predictions': pred_std}
                 
         return jsonify(response)
