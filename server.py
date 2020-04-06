@@ -227,7 +227,13 @@ def ai():
                     set_session(sess)
                     
                     if mode_pred:
-                        pred_res = tf_pred(Path(csv_pred_abspath), model_modes, *tf_models)
+                        try:
+                            pred_res = tf_pred(Path(csv_pred_abspath), model_modes, *tf_models)
+                        except Exception as e:
+                            tb = traceback.format_exc()
+                            print(tb)
+                            tb = tb.split('\n')[-2]
+                            return jsonify(Error=tb)
                         def beautify(res): 
                             if res != None: return f'{res[0][0]:.2f} %'
                             else: return res
@@ -236,7 +242,13 @@ def ai():
                         if tf_std: response['Tensorflow']['std']['Prediction'] = pred_res[1]
                     
                     if mode_vis:
-                        vis_res = tf_vis(Path(csv_vis_abspath), model_modes, figs_savedir, False, *tf_models)
+                        try:
+                            vis_res = tf_vis(Path(csv_vis_abspath), model_modes, figs_savedir, False, *tf_models)
+                        except Exception as e:
+                            tb = traceback.format_exc()
+                            print(tb)
+                            tb = tb.split('\n')[-2]
+                            return jsonify(Error=tb)
                         if tf_nos: response['Tensorflow']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
                                                                                      'R2': vis_res[0][1],
                                                                                      'RMSE': vis_res[0][2],
