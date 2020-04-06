@@ -185,7 +185,7 @@ def ai():
                 return 'scaler_y.pickle not found for device_id {}'.format(device_id)
             
             scalers_path = [scaler_x_path, scaler_y_path]
-        else: scaler_path = [None, None]
+        else: scalers_path = [None, None]
         
         
 
