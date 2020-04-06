@@ -141,7 +141,7 @@ def new_scaler():
         else: return 'scaler_x.pickle is required.'
         
         if scaler_y != None:
-            if scaler_y_name != 'scaler_y.pickle': return 'Wrong scaler_x.pickle.'
+            if scaler_y_name != 'scaler_y.pickle': return 'Wrong scaler_y.pickle.'
             scaler_y_name = 'scaler_y_of_model_id_{}.pickle'.format(model_id)
             save_input(scaler_y, scaler_y_name, save_dir)
         else: return 'scaler_y.pickle is required.'
