@@ -159,6 +159,9 @@ def ai():
         # values
         values = request.values.to_dict()
         
+        # mode: 'nos` or `std`
+        mode = values.get('mode')
+        
         # model
         model_id = values.get('model_id')
         try:
@@ -172,17 +175,18 @@ def ai():
         if device_id == None: return 'Please specify device_id.'
         
         # scalers
-        scaler_x_path = './{}/scaler_x_of_model_id_{}.pickle'.format(device_id, model_id)
-        if not os.path.isfile(scaler_x_path):
-            return 'scaler_x.pickle not found for device_id {}'.format(device_id)
+        if mode == 'std':
+            scaler_x_path = './{}/scaler_x_of_model_id_{}.pickle'.format(device_id, model_id)
+            if not os.path.isfile(scaler_x_path):
+                return 'scaler_x.pickle not found for device_id {}'.format(device_id)
+            
+            scaler_y_path = './{}/scaler_y_of_model_id_{}.pickle'.format(device_id, model_id)
+            if not os.path.isfile(scaler_y_path):
+                return 'scaler_y.pickle not found for device_id {}'.format(device_id)
+            
+            scalers_path = [scaler_x_path, scaler_y_path]
         
-        scaler_y_path = './{}/scaler_y_of_model_id_{}.pickle'.format(device_id, model_id)
-        if not os.path.isfile(scaler_y_path):
-            return 'scaler_y.pickle not found for device_id {}'.format(device_id)
         
-        scalers_path = [scaler_x_path, scaler_y_path]
-        
-        mode = values.get('mode')
 
         files = request.files.to_dict()
         csv_pred, csv_pred_name = get_input(files, 'csv_prediction')
