@@ -58,7 +58,8 @@ def new_model():
         # values
         values = request.values.to_dict()
         device_id = values.get('device_id')
-        if device_id == None: return f'Please specify device_id.'
+        # if device_id == None: return f'Please specify device_id.'
+        if device_id == None: return f'モデルIDを指示してください。'
         
         # files
         files = request.files.to_dict()
@@ -67,10 +68,12 @@ def new_model():
         
         
         # cases
-        if model == None: return 'Please specify a model to upload.'
+        # if model == None: return 'Please specify a model to upload.'
+        if model == None: return 'モデルを指示してください。'
         
         if [('std' in model_name), scaler != None].count(True) == 1:
-            return 'std model and scaler must come together. Please make sure to upload both.'
+            # return 'std model and scaler must come together. Please make sure to upload both.'
+            return '標準化ファイルも指示してください。'
         
         scaler_name = f'scaler_of_{model_name.split(".")[0]}.pickle'
         if 'sk' in model_name:
@@ -97,7 +100,8 @@ def ai():
         # values
         values = request.values.to_dict()
         device_id = values.get('device_id')
-        if device_id == None: return f'Please specify device_id.'
+        # if device_id == None: return f'Please specify device_id.'
+        if device_id == None: return f'設備IDを指示してください。'
         
         
         # init models
@@ -139,8 +143,8 @@ def ai():
                     model_modes.add('std')
                     tf_std_model = load_model(tf_path/'models'/device_id/m)
                     tf_std_model_name = m
-                else: return f'Not available models. Please choose from: {available_models}.'
-        else: return 'Please specify models to use.'
+        # else: return 'Please specify models to use.'
+        else: return 'モデルを指示してください。'
 
         
         # init scalers
@@ -167,13 +171,15 @@ def ai():
         if csv_pred != None:
             csv_pred_abspath = save_input(csv_pred, csv_pred_name, csv_savedir)
             mode_pred = True
-            if 'prediction' not in csv_pred_name: return 'Not legal file for csv_prediction.'
+            # if 'prediction' not in csv_pred_name: return 'Not legal file for csv_prediction.'
+            if 'prediction' not in csv_pred_name: return '予測用のデータファイルは不正です。'
         
         csv_vis, csv_vis_name = get_input(files, 'csv_visual')
         if csv_vis != None: 
             csv_vis_abspath = save_input(csv_vis, csv_vis_name, csv_savedir)
             mode_vis = True
-            if 'visual' not in csv_vis_name: return 'Not legal file for csv_visual.'
+            # if 'visual' not in csv_vis_name: return 'Not legal file for csv_visual.'
+            if 'visual' not in csv_vis_name: return '時系列グラフ表示用のデータファイルは不正です。'
         
         for module in modules:
             if module == 'sklearn':
