@@ -59,7 +59,7 @@ def new_model():
         values = request.values.to_dict()
         device_id = values.get('device_id')
         # if device_id == None: return f'Please specify device_id.'
-        if device_id == None: return f'モデルIDを指示してください。'
+        if device_id == None: return 'モデルIDを指示してください。'
         
         # files
         files = request.files.to_dict()
@@ -101,7 +101,7 @@ def ai():
         values = request.values.to_dict()
         device_id = values.get('device_id')
         # if device_id == None: return f'Please specify device_id.'
-        if device_id == None: return f'設備IDを指示してください。'
+        if device_id == None: return '設備IDを指示してください。'
         
         
         # init models
