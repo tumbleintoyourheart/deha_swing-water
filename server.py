@@ -47,7 +47,8 @@ def renom_init():
         try:
             models[model_id] = init(host, port, model_id)
         except Exception as e:
-            return jsonify(Error='Unable to pull model_id {}.'.format(model_id))
+            # return jsonify(Error='Unable to pull model_id {}.'.format(model_id))
+            return jsonify(Error='{}をPullできません。'.format(model_id))
         
         return 'Successfully initialized Regressor with model_id={}.'.format(model_id)
         
@@ -123,9 +124,11 @@ def new_scaler():
         # values
         values = request.values.to_dict()
         model_id = values.get('model_id')
-        if model_id == None: return 'Please specify model_id.'
+        # if model_id == None: return 'Please specify model_id.'
+        if model_id == None: return 'モデルIDを指示してください。'
         device_id = values.get('device_id')
-        if device_id == None: return 'Please specify device_id.'
+        # if device_id == None: return 'Please specify device_id.'
+        if device_id == None: return '設備IDを指示してください。'
         
         # files
         files = request.files.to_dict()
@@ -135,16 +138,20 @@ def new_scaler():
         
         # cases
         if scaler_x != None:
-            if scaler_x_name != 'scaler_x.pickle': return 'Wrong scaler_x.pickle.'
+            # if scaler_x_name != 'scaler_x.pickle': return 'Wrong scaler_x.pickle.'
+            if scaler_x_name != 'scaler_x.pickle': return '標準化ファイルXは不正です。'
             scaler_x_name = 'scaler_x_of_model_id_{}.pickle'.format(model_id)
             save_input(scaler_x, scaler_x_name, save_dir)
-        else: return 'scaler_x.pickle is required.'
+        # else: return 'scaler_x.pickle is required.'
+        else: return '標準化ファイルXは必須です。'
         
         if scaler_y != None:
-            if scaler_y_name != 'scaler_y.pickle': return 'Wrong scaler_y.pickle.'
+            # if scaler_y_name != 'scaler_y.pickle': return 'Wrong scaler_y.pickle.'
+            if scaler_y_name != 'scaler_y.pickle': return '標準化ファイルYは不正です。'
             scaler_y_name = 'scaler_y_of_model_id_{}.pickle'.format(model_id)
             save_input(scaler_y, scaler_y_name, save_dir)
-        else: return 'scaler_y.pickle is required.'
+        # else: return 'scaler_y.pickle is required.'
+        else: return '標準化ファイルYは必須です。'
         
         return '{}, {}'.format(scaler_x_name, scaler_y_name)
     else: return 'Not allowed method.'
@@ -164,25 +171,30 @@ def ai():
         
         # model
         model_id = values.get('model_id')
+        if model_id == None: return 'モデルIDを指示してください。'
         try:
             regressor = models[model_id]
         except Exception as e:
             tb = traceback.format_exc()
             print(tb)
-            return jsonify(Error='Init model first.')
+            # return jsonify(Error='Init model first.')
+            return jsonify(Error='モデルを実装してください。')
         
         device_id = values.get('device_id')
-        if device_id == None: return 'Please specify device_id.'
+        # if device_id == None: return 'Please specify device_id.'
+        if device_id == None: return '設備IDを指示してください。'
         
         # scalers
         if mode == 'std':
             scaler_x_path = './{}/scaler_x_of_model_id_{}.pickle'.format(device_id, model_id)
             if not os.path.isfile(scaler_x_path):
-                return 'scaler_x.pickle not found for device_id {}'.format(device_id)
+                # return 'scaler_x.pickle not found for device_id {}'.format(device_id)
+                return '{}に該当する標準化ファイルXは見つかりません。'.format(device_id)
             
             scaler_y_path = './{}/scaler_y_of_model_id_{}.pickle'.format(device_id, model_id)
             if not os.path.isfile(scaler_y_path):
-                return 'scaler_y.pickle not found for device_id {}'.format(device_id)
+                # return 'scaler_y.pickle not found for device_id {}'.format(device_id)
+                return '{}に該当する標準化ファイルYは見つかりません。'.format(device_id)
             
             scalers_path = [scaler_x_path, scaler_y_path]
         else: scalers_path = [None, None]
@@ -195,13 +207,15 @@ def ai():
         if csv_pred != None:
             csv_pred_abspath = save_input(csv_pred, csv_pred_name, csv_savedir)
             mode_pred = True
-            if 'prediction' not in csv_pred_name: return 'Not legal file for csv_prediction.'
+            # if 'prediction' not in csv_pred_name: return 'Not legal file for csv_prediction.'
+            if 'prediction' not in csv_pred_name: return '予測用のデータファイルは不正です。'
         
         csv_vis, csv_vis_name = get_input(files, 'csv_visual')
         if csv_vis != None: 
             csv_vis_abspath = save_input(csv_vis, csv_vis_name, csv_savedir)
             mode_vis = True
-            if 'visual' not in csv_vis_name: return 'Not legal file for csv_visual.'
+            # if 'visual' not in csv_vis_name: return 'Not legal file for csv_visual.'
+            if 'visual' not in csv_vis_name: return '時系列グラフ表示用のデータファイルは不正です。'
         
         
         response['Renom'] = {'nos': {},
