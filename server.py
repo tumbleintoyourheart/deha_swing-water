@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 import os, sys, argparse, pickle, re, copy
 from pathlib import *
 
