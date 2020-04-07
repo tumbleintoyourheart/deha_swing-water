@@ -196,7 +196,7 @@ def ai():
                         tb = traceback.format_exc()
                         print(tb)
                         tb = tb.split('\n')[-2]
-                        return jsonify(Error=tb)
+                        return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
                     def beautify(res): 
                         if res != None: return f'{res[0]:.2f} %'
                         else: return res
@@ -211,7 +211,7 @@ def ai():
                         tb = traceback.format_exc()
                         print(tb)
                         tb = tb.split('\n')[-2]
-                        return jsonify(Error=tb)
+                        return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
                     if sklearn_nos: response['Scikit-learn']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
                                                                 'R2': vis_res[0][1],
                                                                 'RMSE': vis_res[0][2],
@@ -239,7 +239,7 @@ def ai():
                             tb = traceback.format_exc()
                             print(tb)
                             tb = tb.split('\n')[-2]
-                            return jsonify(Error=tb)
+                            return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
                         def beautify(res): 
                             if res != None: return f'{res[0][0]:.2f} %'
                             else: return res
@@ -254,7 +254,7 @@ def ai():
                             tb = traceback.format_exc()
                             print(tb)
                             tb = tb.split('\n')[-2]
-                            return jsonify(Error=tb)
+                            return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
                         if tf_nos: response['Tensorflow']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
                                                                                      'R2': vis_res[0][1],
                                                                                      'RMSE': vis_res[0][2],
