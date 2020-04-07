@@ -76,7 +76,8 @@ def new_model():
             # return 'std model and scaler must come together. Please make sure to upload both.'
             return '標準化ファイルも指示してください。'
         
-        scaler_name = f'scaler_of_{model_name.split(".")[0]}.pickle'
+        tmp = model_name.split(".")[0]
+        scaler_name = f'scaler_of_{tmp}.pickle'
         if 'sk' in model_name:
             save_dir = sklearn_path/'models'/device_id
             save_input(model, model_name, save_dir)
