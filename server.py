@@ -48,7 +48,7 @@ def renom_init():
             models[model_id] = init(host, port, model_id)
         except Exception as e:
             # return jsonify(Error='Unable to pull model_id {}.'.format(model_id))
-            return jsonify(Error='{}をPullできません。'.format(model_id))
+            return jsonify(Error='Renomサーバーに該当するモデルがまだ用意されていません。')
         
         return 'Successfully initialized Regressor with model_id={}.'.format(model_id)
         
@@ -228,7 +228,7 @@ def ai():
                     tb = traceback.format_exc()
                     print(tb)
                     tb = tb.split('\n')[-2]
-                    return jsonify(Error=tb)
+                    return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
                 pred_nos = '{:.2f} %'.format(pred_nos[0][0])
                 response['Renom']['nos']['Prediction'] = pred_nos
             
@@ -239,7 +239,7 @@ def ai():
                     tb = traceback.format_exc()
                     print(tb)
                     tb = tb.split('\n')[-2]
-                    return jsonify(Error=tb)
+                    return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
                 pred_std = '{:.2f} %'.format(pred_std[0][0])
                 response['Renom']['std']['Prediction'] = pred_std
 
@@ -251,7 +251,7 @@ def ai():
                     tb = traceback.format_exc()
                     print(tb)
                     tb = tb.split('\n')[-2]
-                    return jsonify(Error=tb)
+                    return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
                 response['Renom']['nos']['Visualization'] = {'Sorted predictions': pred_nos}
             
             elif mode == 'std':
@@ -261,7 +261,7 @@ def ai():
                     tb = traceback.format_exc()
                     print(tb)
                     tb = tb.split('\n')[-2]
-                    return jsonify(Error=tb)
+                    return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
                 response['Renom']['std']['Visualization'] = {'Sorted predictions': pred_std}
                 
         return jsonify(response)
