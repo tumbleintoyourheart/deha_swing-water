@@ -199,7 +199,7 @@ def ai():
                         tb = tb.split('\n')[-2]
                         return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
                     def beautify(res): 
-                        if res != None: return f'{res[0]:.2f} %'
+                        if res != None: return f'{res[0]:.2f}'
                         else: return res
                     pred_res = list(map(beautify, pred_res))
                     if sklearn_nos: response['Scikit-learn']['nos']['Prediction'] = pred_res[0]
@@ -242,7 +242,7 @@ def ai():
                             tb = tb.split('\n')[-2]
                             return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
                         def beautify(res): 
-                            if res != None: return f'{res[0][0]:.2f} %'
+                            if res != None: return f'{res[0][0]:.2f}'
                             else: return res
                         pred_res = list(map(beautify, pred_res))
                         if tf_nos: response['Tensorflow']['nos']['Prediction'] = pred_res[0]
