@@ -1,4 +1,5 @@
 # 機械学習
+import json
 import pandas as pd
 import numpy as np
 import pickle
@@ -28,8 +29,9 @@ deprecation._PRINT_DEPRECATION_WARNINGS = False
 
 
 
-def visualize(csv_input, model_modes, figs_savedir, show, scaler, model1, model2):
-    inp = pd.read_csv(csv_input)
+def visualize(input_json, model_modes, figs_savedir, show, scaler, model1, model2):
+    inp = json.loads(input_json)
+    inp = pd.DataFrame(inp)
     inp_pred = inp.drop(columns=["day", "moisture_per"])
     if 'nos' in model_modes:
         '''
@@ -78,15 +80,3 @@ def visualize(csv_input, model_modes, figs_savedir, show, scaler, model1, model2
     else: normed_res, normed_savepath, normed_r2, normed_rmse = None, None, None, None
     
     return (unnormed_savepath, unnormed_r2, unnormed_rmse, unnormed_res), (normed_savepath, normed_r2, normed_rmse, normed_res)
-    
-if __name__ == '__main__':
-    figs_savedir = Path('./visualizations')
-    os.makedirs(figs_savedir, exist_ok=True)
-    
-    csv_input = Path('./csv')/'200302_atg_dsp_visual.csv'
-    
-    scaler = pickle.load(open(Path('./models')/'scaler.pickle', 'rb'))
-    model1 = keras.models.load_model(Path('./models')/'200310_atg_dsp_tf_nn_nos.hdf5')
-    model2 = keras.models.load_model(Path('./models')/'200310_atg_dsp_tf_nn_std.hdf5')
-    
-    visualize(csv_input, figs_savedir, True, scaler, model1, model2)

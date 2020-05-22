@@ -18,9 +18,10 @@ for w in [UserWarning, FutureWarning, DeprecationWarning]:
     warnings.filterwarnings("ignore", category=w)
 
 
-def visualize(csv_input, model_modes, figs_savedir, show, scaler, model1, model2):
-    inp = pd.read_csv(csv_input)
-    inp_pred = inp.drop(columns=["day", "moisture_per"])
+def visualize(input_json, model_modes, figs_savedir, show, scaler, model1, model2):
+    inp = pd.read_json(input_json, typ='series')
+    inp = pd.DataFrame([inp])
+    inp_pred    = inp.drop(columns=["day", "moisture_per"])
     if 'nos' in model_modes:
         '''
         Unnormalized
@@ -73,10 +74,11 @@ if __name__ == '__main__':
     figs_savedir = Path('./visualizations')
     os.makedirs(figs_savedir, exist_ok=True)
     
-    csv_input = Path('./csv')/'200302_atg_dsp_visual.csv'
+    input_csv   = Path('./csv')/'200302_atg_dsp_visual.csv'
+    input_df    = pd.read_csv(input_csv)
     
-    scaler = pickle.load(open(Path('./models')/'scaler.pickle', 'rb'))
-    model1 = pickle.load(open(Path('./models')/'200310_atg_dsp_sk_rf_nos.pickle', mode='rb'))
-    model2 = pickle.load(open(Path('./models')/'200310_atg_dsp_sk_rf_std.pickle', mode='rb'))
+    scaler = pickle.load(open(Path('./models')/'1'/'scaler_of_200310_atg_dsp_sk_rf_std.pickle', 'rb'))
+    model1 = pickle.load(open(Path('./models')/'1'/'200310_atg_dsp_sk_rf_nos.pickle', mode='rb'))
+    model2 = pickle.load(open(Path('./models')/'1'/'200310_atg_dsp_sk_rf_std.pickle', mode='rb'))
     
-    visualize(csv_input, figs_savedir, True, scaler, model1, model2)
+    visualize(input_df, 'nos', figs_savedir, True, scaler, model1, model2)

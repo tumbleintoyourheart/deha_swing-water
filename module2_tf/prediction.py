@@ -30,8 +30,9 @@ deprecation._PRINT_DEPRECATION_WARNINGS = False
 
 
 
-def predict(csv_input, model_modes, scaler, model1, model2):
-    inp = pd.read_csv(csv_input)
+def predict(input_json, model_modes, scaler, model1, model2):
+    inp = pd.read_json(input_json, typ='series')
+    inp = pd.DataFrame([inp])
     if 'nos' in model_modes:
         pred_unnormed = model1.predict(inp)
         print(f'nos: {pred_unnormed}.')
@@ -44,12 +45,3 @@ def predict(csv_input, model_modes, scaler, model1, model2):
     else: pred_normed = None
 
     return pred_unnormed, pred_normed
-
-if __name__ == '__main__':
-    csv_input = Path('./csv')/'200302_atg_dsp_prediction.csv'
-    
-    scaler = pickle.load(open(Path('./models')/'scaler.pickle', 'rb'))
-    model1 = keras.models.load_model(Path('./models')/'200310_atg_dsp_tf_nn_nos.hdf5')
-    model2 = keras.models.load_model(Path('./models')/'200310_atg_dsp_tf_nn_std.hdf5')
-    
-    predict(csv_input, scaler, model1, model2)

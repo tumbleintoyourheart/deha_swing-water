@@ -19,8 +19,9 @@ for w in [UserWarning, FutureWarning, DeprecationWarning]:
 
 
 
-def predict(csv_input, model_modes, scaler, model1, model2):
-    inp = pd.read_csv(csv_input)
+def predict(input_json, model_modes, scaler, model1, model2):
+    inp = pd.read_json(input_json, typ='series')
+    inp = pd.DataFrame([inp])
     
     if 'nos' in model_modes:
         '''
@@ -41,10 +42,11 @@ def predict(csv_input, model_modes, scaler, model1, model2):
     return pred_unnormed, pred_normed
     
 if __name__ == '__main__':
-    csv_input = Path('./csv')/'200302_atg_dsp_prediction.csv'
+    input_csv   = Path('./csv')/'200302_atg_dsp_prediction.csv'
+    input_df    = pd.read_csv(input_csv)
     
-    scaler = pickle.load(open(Path('./models')/'scaler.pickle', 'rb'))
-    model1 = pickle.load(open(Path('./models')/'200310_atg_dsp_sk_rf_nos.pickle', mode='rb'))
-    model2 = pickle.load(open(Path('./models')/'200310_atg_dsp_sk_rf_std.pickle', mode='rb'))
+    scaler      = pickle.load(open(Path('./models')/'1'/'scaler_of_200310_atg_dsp_sk_rf_std.pickle', 'rb'))
+    model1      = pickle.load(open(Path('./models')/'1'/'200310_atg_dsp_sk_rf_nos.pickle', mode='rb'))
+    model2      = pickle.load(open(Path('./models')/'1'/'200310_atg_dsp_sk_rf_std.pickle', mode='rb'))
     
-    predict(csv_input, scaler, model1, model2)
+    predict(input_df, 'nos', scaler, model1, model2)
