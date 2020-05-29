@@ -233,8 +233,10 @@ def ai():
                                                                 'Sorted predictions': vis_res[1][3]}
                 
                 if mode_heatmap:
-                    response['Scikit-learn']['nos']['Heatmap'] = {}
-                    response['Scikit-learn']['std']['Heatmap'] = {}
+                    response['Scikit-learn']['nos']['Heatmap']  = {}
+                    response['Scikit-learn']['std']['Heatmap']  = {}
+                    response['Scikit-learn']['nos']['Download'] = {}
+                    response['Scikit-learn']['std']['Download'] = {}
                     
                     range1      = values.get('range1').replace(' ', '').split(',')
                     sim_name1   = range1[0]
@@ -247,13 +249,19 @@ def ai():
                     sim_input   = get_sim_input(pred_df, sim_name1, sim_range1, sim_name2, sim_range2)
                     
                     if sklearn_nos_model != None:
-                        sim_df  = simulation(sim_input, sklearn_nos_model, None, sim_name1, sim_name2)
+                        sim_df, download_df = simulation(sim_input, sklearn_nos_model, None, sim_name1, sim_name2)
                         for col in list(sim_df.columns):
-                            response['Scikit-learn']['nos']['Heatmap'][col] = sim_df[col].to_numpy().tolist()
+                            response['Scikit-learn']['nos']['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
+                        for col in list(download_df.columns):
+                            response['Scikit-learn']['nos']['Download'][col]    = download_df[col].to_numpy().tolist()
+                            
                     if sklearn_std_model != None:
-                        sim_df  = simulation(sim_input, sklearn_std_model, sklearn_scaler, sim_name1, sim_name2)
+                        sim_df, download_df = simulation(sim_input, sklearn_std_model, sklearn_scaler, sim_name1, sim_name2)
                         for col in list(sim_df.columns):
-                            response['Scikit-learn']['std']['Heatmap'][col] = sim_df[col].to_numpy().tolist()
+                            response['Scikit-learn']['std']['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
+                        for col in list(download_df.columns):
+                            response['Scikit-learn']['std']['Download'][col]    = download_df[col].to_numpy().tolist()
+                            
                     print(sim_df.head())
                 
                 if mode_summary:

@@ -62,7 +62,7 @@ def simulation(input_df, model, scaler, sim_name1='no2poly_m3_h', sim_name2='fe_
     plt.savefig('./module3_heatmap/heatmap.png', dpi=200)
     
     # print(pred_df[sim_name1].to_numpy)
-    return          pred_df[[sim_name1, sim_name2, 'pred']]
+    return          pred_df[[sim_name1, sim_name2, 'pred']], pred_df
 
 
 def summary(input_df, model, scaler, show=False):
