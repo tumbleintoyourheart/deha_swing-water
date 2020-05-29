@@ -314,6 +314,38 @@ def ai():
                                                                                      'RMSE': vis_res[1][2],
                                                                                      'Sorted predictions': vis_res[1][3]}
                         
+                    if mode_heatmap:
+                        response['Tensorflow']['nos']['Heatmap']  = {}
+                        response['Tensorflow']['std']['Heatmap']  = {}
+                        response['Tensorflow']['nos']['Download'] = {}
+                        response['Tensorflow']['std']['Download'] = {}
+                        
+                        range1      = values.get('range1').replace(' ', '').split(',')
+                        sim_name1   = range1[0]
+                        sim_range1  = [float(x) for x in range1[1:]]
+                        
+                        range2      = values.get('range2').replace(' ', '').split(',')
+                        sim_name2   = range2[0]
+                        sim_range2  = [float(x) for x in range2[1:]]
+                        
+                        sim_input   = get_sim_input(pred_df, sim_name1, sim_range1, sim_name2, sim_range2)
+                        
+                        if tf_nos_model != None:
+                            sim_df, download_df = simulation(sim_input, tf_nos_model, None, sim_name1, sim_name2)
+                            for col in list(sim_df.columns):
+                                response['Tensorflow']['nos']['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
+                            for col in list(download_df.columns):
+                                response['Tensorflow']['nos']['Download'][col]    = download_df[col].to_numpy().tolist()
+                                
+                        if tf_std_model != None:
+                            sim_df, download_df = simulation(sim_input, tf_std_model, tf_scaler, sim_name1, sim_name2)
+                            for col in list(sim_df.columns):
+                                response['Tensorflow']['std']['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
+                            for col in list(download_df.columns):
+                                response['Tensorflow']['std']['Download'][col]    = download_df[col].to_numpy().tolist()
+                                
+                        print(sim_df.head())
+                        
         return jsonify(response)
                 
         
