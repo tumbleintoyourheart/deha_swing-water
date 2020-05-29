@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- 
-import  os, sys, argparse, pickle, re, copy, argparse, warnings
+import  os, sys, argparse, pickle, re, copy, argparse, warnings, json
 from    pathlib                             import *
 
 from    flask                               import Flask, jsonify, request
@@ -233,15 +233,28 @@ def ai():
                                                                 'Sorted predictions': vis_res[1][3]}
                 
                 if mode_heatmap:
-                    sim_range1  = values.get('sim_range1')
-                    sim_range2  = values.get('sim_range2')
-                    sim_input   = get_sim_input(pred_df, sim_range1, sim_range2)
+                    response['Scikit-learn']['nos']['Heatmap'] = {}
+                    response['Scikit-learn']['std']['Heatmap'] = {}
+                    
+                    range1      = values.get('range1').replace(' ', '').split(',')
+                    sim_name1   = range1[0]
+                    sim_range1  = [float(x) for x in range1[1:]]
+                    
+                    range2      = values.get('range2').replace(' ', '').split(',')
+                    sim_name2   = range2[0]
+                    sim_range2  = [float(x) for x in range2[1:]]
+                    
+                    sim_input   = get_sim_input(pred_df, sim_name1, sim_range1, sim_name2, sim_range2)
                     
                     if sklearn_nos_model != None:
-                        response['Scikit-learn']['nos']['Heatmap'] = simulation(sim_input, sklearn_nos_model, None)
+                        sim_df  = simulation(sim_input, sklearn_nos_model, None, sim_name1, sim_name2)
+                        for col in list(sim_df.columns):
+                            response['Scikit-learn']['nos']['Heatmap'][col] = sim_df[col].to_numpy().tolist()
                     if sklearn_std_model != None:
-                        response['Scikit-learn']['std']['Heatmap'] = simulation(sim_input, sklearn_std_model, sklearn_scaler)
-                        
+                        sim_df  = simulation(sim_input, sklearn_std_model, sklearn_scaler, sim_name1, sim_name2)
+                        for col in list(sim_df.columns):
+                            response['Scikit-learn']['std']['Heatmap'][col] = sim_df[col].to_numpy().tolist()
+                    print(sim_df.head())
                 
                 if mode_summary:
                     if sklearn_nos_model != None:

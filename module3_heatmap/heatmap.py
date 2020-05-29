@@ -1,4 +1,4 @@
-import  pickle
+import  pickle, json
 import  pandas                      as pd
 import  numpy                       as np
 import  matplotlib.pyplot           as plt
@@ -13,13 +13,11 @@ from    sklearn.externals           import joblib
 
 
 
-def get_sim_input(input_df, sim_range1=(0, 2, 0.025), sim_range2=(15, 25, 0.1)):
-    # input_df              = pd.read_csv(Path(input_df))
-    input_df                = input_df
+def get_sim_input(input_json, sim_name1='no2poly_m3_h', sim_range1=(0, 2, 0.025), sim_name2='fe_m3_h', sim_range2=(15, 25, 0.1)):
+    input_df                = pd.read_json(input_json, typ='series')
+    input_df                = pd.DataFrame([input_df])
     input_df["ts_mg_L"]     = 30000
 
-    sim_name1       = "no2poly_m3_h"
-    sim_name2       = "fe_m3_h"
     sim_names       = [sim_name1, sim_name2]
     
     sim_range1      = np.arange(*sim_range1)
@@ -34,39 +32,37 @@ def get_sim_input(input_df, sim_range1=(0, 2, 0.025), sim_range2=(15, 25, 0.1)):
         mat_df[i]   = input_df.loc[0, i]
 
     sim_mat_df      = sim_df.join(mat_df)
-    sim_mat_df.to_csv('./simulation.csv')
+    sim_mat_df.to_csv('./module3_heatmap/simulation.csv')
     return          sim_mat_df
 
 
-def simulation(input_df, model, scaler, show=False):
+def simulation(input_df, model, scaler, sim_name1='no2poly_m3_h', sim_name2='fe_m3_h', show=False):
     pred_df         = input_df
+    # pred_df         = input_df.drop(columns=["Unnamed: 0"])
     
-    if scaler != None:
-        pred_df     = scaler.transform(pred_df)
+    pred_df_scaled     = scaler.transform(pred_df) if (scaler != None) else pred_df
         
-    pred            = model.predict(pred_df)
+    pred            = model.predict(pred_df_scaled)
     pred_df['pred'] = pred
     
-    if show:
-        sim_name1   = "no2poly_m3_h"
-        sim_name2   = "fe_m3_h"
-
-        pred_df.plot(
-                    kind="scatter",
-                    x=sim_name1,
-                    y=sim_name2,
-                    alpha=0.4,
-                    s=pred,
-                    label="moisture%",
-                    figsize=(10,7),
-                    cmap=plt.get_cmap("jet"),
-                    colorbar=True,
-                    c="pred"
-                    )
-        plt.legend()
-        plt.show()
+    pred_df.plot(
+                kind="scatter",
+                x=sim_name1,
+                y=sim_name2,
+                alpha=0.4,
+                s=pred,
+                label="moisture%",
+                figsize=(10,7),
+                cmap=plt.get_cmap("jet"),
+                colorbar=True,
+                c="pred"
+                )
+    plt.legend()
+    if show:    plt.show()
+    plt.savefig('./module3_heatmap/heatmap.png', dpi=200)
     
-    return          pred_df
+    # print(pred_df[sim_name1].to_numpy)
+    return          pred_df[[sim_name1, sim_name2, 'pred']]
 
 
 def summary(input_df, model, scaler, show=False):
@@ -90,7 +86,7 @@ def summary(input_df, model, scaler, show=False):
 
 
 if __name__=='__main__':
-    sim_input       = get_sim_input('./200302_A01_prediction.csv')
+    # sim_input       = get_sim_input('./200302_A01_prediction.csv')
     model           = pickle.load(open('./200310_atg_dsp_sk_rf_std.pickle', 'rb'))
     scaler          = pickle.load(open('./scaler.pickle', 'rb'))
-    simulation(sim_input, model, scaler, True)
+    simulation(pd.read_csv('./simulation.csv'), model, scaler, show=True)
