@@ -1,20 +1,10 @@
-import os, sys, argparse, pickle, re, copy
-# from pathlib import *
+from imports                import *
+from modules.prediction     import prediction
+from modules.visualization  import visualization
+from modules.heatmap        import *
+from modules.utils          import *
 
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-import requests
-from werkzeug.utils import secure_filename
-import traceback
 
-import numpy as np
-import pandas as pd
-from sklearn import preprocessing
-from renom_rg.api.interface.regressor import Regressor
-
-import warnings
-for w in [UserWarning, FutureWarning, DeprecationWarning]:
-    warnings.filterwarnings("ignore", category=w)
 
 app = Flask(__name__)
 CORS(app)
@@ -47,7 +37,6 @@ def renom_init():
         try:
             models[model_id] = init(host, port, model_id)
         except Exception as e:
-            # return jsonify(Error='Unable to pull model_id {}.'.format(model_id))
             return jsonify(Error='Renomサーバーに該当するモデルがまだ用意されていません。')
         
         return 'Successfully initialized Regressor with model_id={}.'.format(model_id)
@@ -56,224 +45,147 @@ def renom_init():
     
 
 
-def get_input(files, key):
-    if files.get(key):
-        inp = files[key]
-        inp_name = secure_filename(inp.filename)
-        return inp, inp_name
-    else: return None, None
-    
-def save_input(inp, inp_name, save_dir):
-    os.makedirs(save_dir, exist_ok=True)
-    abs_path = os.path.join(save_dir, inp_name)
-    inp.save(abs_path)
-    return abs_path
-                
-
-
-def prediction(device_id, regressor, scaler_x_path, scaler_y_path, csv_input, mode):
-    inp = pd.read_csv(csv_input)
-    pickle.dump(inp, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
-    inp = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
-    
-    setsumei_list = list(inp.columns)
-    x_col = pd.DataFrame(inp, columns=setsumei_list)
-    
-    if mode == 'nos':
-        pred = regressor.predict(np.array(x_col))
-        return pred
-
-    elif mode == 'std':
-        scaler_X_standardization = pickle.load(open(scaler_x_path, mode='rb'))
-        scaler_y_standardization = pickle.load(open(scaler_y_path, mode='rb'))
-        np_x_col = scaler_X_standardization.transform(np.array(x_col))
-        pred = regressor.predict(np_x_col)
-        pred = scaler_y_standardization.inverse_transform(pred)
-        return pred
-
-
-
-def visualization(device_id, regressor, scaler_x_path, scaler_y_path, csv_input, mode):
-    inp = pd.read_csv(csv_input)
-    inp_pred = inp.drop(columns=["day", "moisture_per"])
-    pickle.dump(inp_pred, open('./datasrc/prediction_set/pred.pickle', mode='wb'))
-    inp_pred = pickle.load(open("./datasrc/prediction_set/pred.pickle", mode='rb'))  
-    
-    setsumei_list = list(inp_pred.columns)
-    x_col = pd.DataFrame(inp, columns=setsumei_list)
-    
-    if mode == 'nos':
-        pred = regressor.predict(np.array(x_col)).flatten()
-        pred = [x for _, x in sorted(zip(inp['day'].tolist(), pred.tolist()), key=lambda Zip: Zip[0])]
-        return pred
-
-    elif mode == 'std':
-        scaler_X_standardization = pickle.load(open(scaler_x_path, mode='rb'))
-        scaler_y_standardization = pickle.load(open(scaler_y_path, mode='rb'))
-        np_x_col = scaler_X_standardization.transform(np.array(x_col))
-        pred = regressor.predict(np_x_col).flatten()
-        pred = scaler_y_standardization.inverse_transform(pred)
-        pred = [x for _, x in sorted(zip(inp['day'].tolist(), pred.tolist()), key=lambda Zip: Zip[0])]
-        return pred
-    
-
-
 @app.route('/upload_scaler', methods=['GET', 'POST'])
 def new_scaler():
     if request.method == 'POST':
-        # values
-        values = request.values.to_dict()
-        model_id = values.get('model_id')
-        # if model_id == None: return 'Please specify model_id.'
-        if model_id == None: return 'モデルIDを指示してください。'
-        device_id = values.get('device_id')
-        # if device_id == None: return 'Please specify device_id.'
-        if device_id == None: return '設備IDを指示してください。'
+        values                          = request.values.to_dict()
+        files                           = request.files.to_dict()
         
-        # files
-        files = request.files.to_dict()
-        scaler_x, scaler_x_name = get_input(files, 'scaler_x')
-        scaler_y, scaler_y_name = get_input(files, 'scaler_y')
-        save_dir = ('./{}').format(device_id)
+        model_id                        = values.get('model_id')
+        if model_id                     == None: return 'モデルIDを指示してください。'
+        device_id                       = values.get('device_id')
+        if device_id                    == None: return '設備IDを指示してください。'
         
-        # cases
-        if scaler_x != None:
-            # if scaler_x_name != 'scaler_x.pickle': return 'Wrong scaler_x.pickle.'
-            if scaler_x_name != 'scaler_x.pickle': return '標準化ファイルXは不正です。'
-            scaler_x_name = 'scaler_x_of_model_id_{}.pickle'.format(model_id)
+        
+        scaler_x, scaler_x_name         = get_input(files, 'scaler_x')
+        scaler_y, scaler_y_name         = get_input(files, 'scaler_y')
+        save_dir                        = ('./{}').format(device_id)
+        
+        if scaler_x                     != None:
+            if scaler_x_name            != 'scaler_x.pickle': return '標準化ファイルXは不正です。'
+            scaler_x_name               = 'scaler_x_of_model_id_{}.pickle'.format(model_id)
             save_input(scaler_x, scaler_x_name, save_dir)
-        # else: return 'scaler_x.pickle is required.'
-        else: return '標準化ファイルXは必須です。'
+        else: return                    '標準化ファイルXは必須です。'
         
-        if scaler_y != None:
-            # if scaler_y_name != 'scaler_y.pickle': return 'Wrong scaler_y.pickle.'
-            if scaler_y_name != 'scaler_y.pickle': return '標準化ファイルYは不正です。'
+        if scaler_y                     != None:
+            if scaler_y_name            != 'scaler_y.pickle': return '標準化ファイルYは不正です。'
             scaler_y_name = 'scaler_y_of_model_id_{}.pickle'.format(model_id)
             save_input(scaler_y, scaler_y_name, save_dir)
-        # else: return 'scaler_y.pickle is required.'
-        else: return '標準化ファイルYは必須です。'
+        else: return                    '標準化ファイルYは必須です。'
         
-        return '{}, {}'.format(scaler_x_name, scaler_y_name)
-    else: return 'Not allowed method.'
+        return                          '{}, {}'.format(scaler_x_name, scaler_y_name)
+    else: return                        'Not allowed method.'
     
     
     
 @app.route('/renom_ai', methods=['GET', 'POST'])
 def ai():
     if request.method == 'POST':
-        response = {}
+        response                = {}
         
-        # values
-        values = request.values.to_dict()
+        # from request
+        values                  = request.values.to_dict()
+        files                   = request.files.to_dict()
         
-        # mode: 'nos` or `std`
-        mode = values.get('mode')
         
-        # model
-        model_id = values.get('model_id')
-        if model_id == None: return 'モデルIDを指示してください。'
+        # check
+        model_id                = values.get('model_id')
+        if model_id             == None: return 'モデルIDを指示してください。'
         try:
-            regressor = models[model_id]
+            regressor           = models[model_id]
         except Exception as e:
-            tb = traceback.format_exc()
+            tb                  = traceback.format_exc()
             print(tb)
-            # return jsonify(Error='Init model first.')
             return jsonify(Error='モデルを実装してください。')
         
-        device_id = values.get('device_id')
-        # if device_id == None: return 'Please specify device_id.'
-        if device_id == None: return '設備IDを指示してください。'
+        device_id               = values.get('device_id')
+        if device_id            == None: return '設備IDを指示してください。'
         
-        # scalers
-        if mode == 'std':
-            scaler_x_path = './{}/scaler_x_of_model_id_{}.pickle'.format(device_id, model_id)
+        
+        mode                    = values.get('mode')
+        if mode                 == 'std':
+            scaler_x_path       = './{}/scaler_x_of_model_id_{}.pickle'.format(device_id, model_id)
             if not os.path.isfile(scaler_x_path):
-                # return 'scaler_x.pickle not found for device_id {}'.format(device_id)
-                return '{}に該当する標準化ファイルXは見つかりません。'.format(device_id)
+                return          '{}に該当する標準化ファイルXは見つかりません。'.format(device_id)
             
-            scaler_y_path = './{}/scaler_y_of_model_id_{}.pickle'.format(device_id, model_id)
+            scaler_y_path       = './{}/scaler_y_of_model_id_{}.pickle'.format(device_id, model_id)
             if not os.path.isfile(scaler_y_path):
-                # return 'scaler_y.pickle not found for device_id {}'.format(device_id)
-                return '{}に該当する標準化ファイルYは見つかりません。'.format(device_id)
+                return          '{}に該当する標準化ファイルYは見つかりません。'.format(device_id)
             
-            scalers_path = [scaler_x_path, scaler_y_path]
-        else: scalers_path = [None, None]
+            scalers_path        = [scaler_x_path, scaler_y_path]
+        else: scalers_path      = [None, None]
         
         
 
-        files = request.files.to_dict()
-        csv_pred, csv_pred_name = get_input(files, 'csv_prediction')
-        mode_pred, mode_vis = False, False
-        if csv_pred != None:
-            csv_pred_abspath = save_input(csv_pred, csv_pred_name, csv_savedir)
-            mode_pred = True
-            # if 'prediction' not in csv_pred_name: return 'Not legal file for csv_prediction.'
-            if 'prediction' not in csv_pred_name: return '予測用のデータファイルは不正です。'
         
-        csv_vis, csv_vis_name = get_input(files, 'csv_visual')
-        if csv_vis != None: 
-            csv_vis_abspath = save_input(csv_vis, csv_vis_name, csv_savedir)
-            mode_vis = True
-            # if 'visual' not in csv_vis_name: return 'Not legal file for csv_visual.'
-            if 'visual' not in csv_vis_name: return '時系列グラフ表示用のデータファイルは不正です。'
+        # input dataframes
+        pred_df                 = values.get('prediction_dataframe')
+        vis_df                  = values.get('visualize_dataframe')
+        
+        # modes
+        modes                   = values.get('modes').replace(' ', '').split(',')
+        mode_pred               = True if (('prediction' in modes) and pred_df) else False
+        mode_heatmap            = True if (('heatmap'    in modes) and pred_df) else False
+        
+        mode_vis                = True if (('visualize'  in modes) and vis_df)  else False
+        mode_summary            = True if (('summary'    in modes) and vis_df)  else False
+        print(mode_pred, mode_heatmap, mode_vis, mode_summary)
         
         
-        response['Renom'] = {'nos': {},
-                             'std': {}}
+        response['Renom']       = {'nos': {},
+                                   'std': {}}
         if mode_pred:
-            if mode == 'nos':
-                try:
-                    pred_nos = prediction(device_id, regressor, *scalers_path, csv_pred_abspath, 'nos')
-                except Exception as e:
-                    tb = traceback.format_exc()
-                    print(tb)
-                    tb = tb.split('\n')[-2]
-                    return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
-                pred_nos = '{:.2f} %'.format(pred_nos[0][0])
-                response['Renom']['nos']['Prediction'] = pred_nos
-            
-            elif mode == 'std':
-                try:
-                    pred_std = prediction(device_id, regressor, *scalers_path, csv_pred_abspath, 'std')
-                except Exception as e:
-                    tb = traceback.format_exc()
-                    print(tb)
-                    tb = tb.split('\n')[-2]
-                    return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
-                pred_std = '{:.2f} %'.format(pred_std[0][0])
-                response['Renom']['std']['Prediction'] = pred_std
+            try:
+                pred            = prediction(regressor, *scalers_path, pred_df, mode)
+            except Exception as e:
+                tb              = traceback.format_exc()
+                print(tb)
+                tb              = tb.split('\n')[-2]
+                return          jsonify(Error='インポートしたCSVファイルに誤りがあります。')
+            pred                = '{:.2f} %'.format(pred[0][0])
+            response['Renom'][mode]['Prediction'] = pred
 
         if mode_vis:
-            if mode == 'nos':
-                try:
-                    pred_nos = visualization(device_id, regressor, *scalers_path, csv_vis_abspath, 'nos')
-                except Exception as e:
-                    tb = traceback.format_exc()
-                    print(tb)
-                    tb = tb.split('\n')[-2]
-                    return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
-                response['Renom']['nos']['Visualization'] = {'Sorted predictions': pred_nos}
-            
-            elif mode == 'std':
-                try:
-                    pred_std = visualization(device_id, regressor, *scalers_path, csv_vis_abspath, 'std')
-                except Exception as e:
-                    tb = traceback.format_exc()
-                    print(tb)
-                    tb = tb.split('\n')[-2]
-                    return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
-                response['Renom']['std']['Visualization'] = {'Sorted predictions': pred_std}
+            try:
+                pred            = visualization(regressor, *scalers_path, vis_df, mode)
+            except Exception as e:
+                tb              = traceback.format_exc()
+                print(tb)
+                tb              = tb.split('\n')[-2]
+                return          jsonify(Error='インポートしたCSVファイルに誤りがあります。')
+            response['Renom'][mode]['Visualization'] = {'Sorted predictions': pred}
                 
-        return jsonify(response)
+        if mode_heatmap:
+                response['Renom']['nos']['Heatmap']  = {}
+                response['Renom']['std']['Heatmap']  = {}
+                response['Renom']['nos']['Download'] = {}
+                response['Renom']['std']['Download'] = {}
                 
-    else: return 'Not allowed method.'
+                range1          = values.get('range1').replace(' ', '').split(',')
+                sim_name1       = range1[0]
+                sim_range1      = [float(x) for x in range1[1:]]
+                
+                range2          = values.get('range2').replace(' ', '').split(',')
+                sim_name2       = range2[0]
+                sim_range2      = [float(x) for x in range2[1:]]
+                
+                sim_input       = get_sim_input(pred_df, sim_name1, sim_range1, sim_name2, sim_range2)
+                
+                sim_df, download_df = simulation(sim_input, regressor, scaler_x, scaler_y, mode, sim_name1, sim_name2)
+                for col in list(sim_df.columns):
+                    response['Scikit-learn'][mode]['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
+                for col in list(download_df.columns):
+                    response['Scikit-learn'][mode]['Download'][col]    = download_df[col].to_numpy().tolist()
+
+                print(sim_df.head())
+                
+        return                  jsonify(response)
+    else: return                'Not allowed method.'
 
 
 @app.route('/', methods=['GET', 'POST'])
 def hello():
     return 'hello'
-
-
 
 if __name__ == '__main__':
     csv_savedir = ('./csv')
