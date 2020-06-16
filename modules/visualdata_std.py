@@ -54,7 +54,7 @@ data["prediction"] = pred_result
 
 #この行以降は、次回依頼いたします。
 #可視化
-print(data.columns)
+# print(data.columns)
 # plt.scatter(data["moisture_per"], pred_result)
 # plt.show()
 # plt.clf()
