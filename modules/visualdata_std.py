@@ -24,12 +24,12 @@ regressor.pull()
 #予測用の影響・制御因子データ読み込み
 data = pd.read_csv("200302_atg_dsp_visual.csv")
 pred_data = data.drop(columns=["day", "moisture_per"])
-with open('./datasrc/prediction_set/pred.pickle', mode='wb') as f:
-    pickle.dump(pred_data, f)
+# with open('./datasrc/prediction_set/pred.pickle', mode='wb') as f:
+#     pickle.dump(pred_data, f)
 
-# pickleデータの読み込み
-with open("./datasrc/prediction_set/pred.pickle", mode='rb') as f:
-    p_data = pickle.load(f)
+# # pickleデータの読み込み
+# with open("./datasrc/prediction_set/pred.pickle", mode='rb') as f:
+#     p_data = pickle.load(f)
 
 # 【前処理2】: pred.pickle と同階層にあるoutputディレクトリの中から、必要なスケーラーを使用する
 with open("./scaler_x.pickle", mode='rb') as f:
