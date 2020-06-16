@@ -3,12 +3,12 @@ from .imports import *
 
 
 def visualization(regressor, scaler_x_path, scaler_y_path, input_json, mode):
-    input       = pd.read_json(input_json, typ='series')
+    input       = json.loads(input_json)
     input       = pd.DataFrame(input)
     input_pred  = input.drop(columns=["day", "moisture_per"])
 
     x_col       = input_pred
-    print(x_col)
+    print(x_col.head(), x_col.shape)
     
     if mode     == 'nos':
         pred    = regressor.predict(np.array(x_col)).flatten()
