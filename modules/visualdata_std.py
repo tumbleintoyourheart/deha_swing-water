@@ -47,17 +47,17 @@ pre = regressor.predict(np_x_col)
 
 # 値を戻して、表示
 pred_result = scaler_y_standardization.inverse_transform(pre)
-print(pred_result)
+# print(pred_result)
 
 data["prediction"] = pred_result
-print(data)
+# print(data)
 
 #この行以降は、次回依頼いたします。
 #可視化
 print(data.columns)
-plt.scatter(data["moisture_per"], pred_result)
-plt.show()
-plt.clf()
+# plt.scatter(data["moisture_per"], pred_result)
+# plt.show()
+# plt.clf()
 
 #誤差
 score = round(r2_score(data["moisture_per"], pred_result), 2)
