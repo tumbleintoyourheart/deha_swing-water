@@ -172,12 +172,11 @@ def ai():
                 sim_input       = get_sim_input(pred_df, sim_name1, sim_range1, sim_name2, sim_range2)
                 
                 sim_df, download_df = simulation(sim_input, regressor, *scalers_path, mode, sim_name1, sim_name2)
-                print(sim_df.head())
-                print(sim_df[sim_df.columns[0]])
+       
                 for col in list(sim_df.columns):
-                    response['Scikit-learn'][mode]['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
+                    response['Renom'][mode]['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
                 for col in list(download_df.columns):
-                    response['Scikit-learn'][mode]['Download'][col]    = download_df[col].to_numpy().tolist()
+                    response['Renom'][mode]['Download'][col]    = download_df[col].to_numpy().tolist()
 
                 
         return                  jsonify(response)
