@@ -32,9 +32,9 @@ pred_data = data.drop(columns=["day", "moisture_per"])
 #     p_data = pickle.load(f)
 
 # 【前処理2】: pred.pickle と同階層にあるoutputディレクトリの中から、必要なスケーラーを使用する
-with open("./scaler_x.pickle", mode='rb') as f:
+with open("../scaler_x.pickle", mode='rb') as f:
     scaler_X_standardization = pickle.load(f)
-with open("./scaler_y.pickle", mode='rb') as f:
+with open("../scaler_y.pickle", mode='rb') as f:
     scaler_y_standardization = pickle.load(f)
 
 # （以下は標準化されたデータセットで学習したモデルの場合）
