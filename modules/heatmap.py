@@ -7,7 +7,7 @@ def get_sim_input(input_json, sim_name1='no2poly_m3_h', sim_range1=(0, 2, 0.025)
     input_df                = pd.DataFrame([input_df])
 
     sim_names       = [sim_name1, sim_name2]
-    
+    print(sim_range1, sim_range2)
     sim_range1      = np.arange(*sim_range1)
     sim_range2      = np.arange(*sim_range2)
     sim_df          = pd.DataFrame(list(product(sim_range1, sim_range2)), columns=[sim_name1, sim_name2])
