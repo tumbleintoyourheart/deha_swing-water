@@ -7,7 +7,8 @@ def visualization(regressor, scaler_x_path, scaler_y_path, input_json, mode):
     input       = pd.DataFrame([input])
     input_pred  = input.drop(columns=["day", "moisture_per"])
 
-    x_col       = pd.DataFrame(input, columns=list(input_pred.columns))
+    x_col       = input_pred
+    print(x_col)
     
     if mode     == 'nos':
         pred    = regressor.predict(np.array(x_col)).flatten()
