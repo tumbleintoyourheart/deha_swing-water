@@ -1,4 +1,4 @@
-from imports                import *
+from modules.imports        import *
 from modules.prediction     import prediction
 from modules.visualization  import visualization
 from modules.heatmap        import *
