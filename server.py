@@ -145,7 +145,7 @@ def ai():
                 print(tb)
                 tb              = tb.split('\n')[-2]
                 return          jsonify(Error='インポートしたCSVファイルに誤りがあります。')
-            pred                = '{:.2f} %'.format(pred[0][0])
+            pred                = '{:.2f}'.format(pred[0][0])
             response['Renom'][mode]['Prediction'] = pred
 
         if mode_vis:
