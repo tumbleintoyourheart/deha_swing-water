@@ -38,7 +38,8 @@ with open("../scaler_y.pickle", mode='rb') as f:
     scaler_y_standardization = pickle.load(f)
 
 # （以下は標準化されたデータセットで学習したモデルの場合）
-print(pred_data)
+print(pred_data.head())
+print(np.array(pred_data).shape)
 np_x_col = scaler_X_standardization.transform(np.array(pred_data))
 
 # 予測実行
