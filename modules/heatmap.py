@@ -20,7 +20,6 @@ def get_sim_input(input_json, sim_name1='no2poly_m3_h', sim_range1=(0, 2, 0.025)
         mat_df[i]   = input_df.loc[0, i]
 
     sim_mat_df      = sim_df.join(mat_df)
-    sim_mat_df.to_csv('./module3_heatmap/simulation.csv')
     return          sim_mat_df
 
 
