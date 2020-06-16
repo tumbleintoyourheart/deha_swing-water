@@ -1,17 +1,8 @@
-import os, sys, argparse, pickle, re, copy, json
+import  os, sys, argparse, pickle, re, copy, json, requests, traceback, numpy as np, pandas as pd, warnings
 
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-import requests
-from werkzeug.utils import secure_filename
-import traceback
+from    flask                               import Flask, jsonify, request
+from    flask_cors                          import CORS
+from    werkzeug.utils                      import secure_filename
+from    itertools                           import product
 
-import numpy as np
-import pandas as pd
-from sklearn import preprocessing
-from renom_rg.api.interface.regressor import Regressor
-from    itertools                   import product
-
-import warnings
-for w in [UserWarning, FutureWarning, DeprecationWarning]:
-    warnings.filterwarnings("ignore", category=w)
+from    renom_rg.api.interface.regressor    import Regressor

@@ -9,6 +9,9 @@ from modules.utils          import *
 app = Flask(__name__)
 CORS(app)
 
+for w in [UserWarning, FutureWarning, DeprecationWarning]:
+    warnings.filterwarnings("ignore", category=w)
+
 
 def init(host='localhost', port='8080', model_id=0):
     HOST = host
