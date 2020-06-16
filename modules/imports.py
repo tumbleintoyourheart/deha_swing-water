@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn import preprocessing
 from renom_rg.api.interface.regressor import Regressor
+from    itertools                   import product
 
 import warnings
 for w in [UserWarning, FutureWarning, DeprecationWarning]:
