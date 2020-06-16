@@ -121,11 +121,9 @@ def ai():
         # input dataframes
         pred_df                 = values.get('prediction_dataframe')
         vis_df                  = values.get('visualize_dataframe')
-        print(pred_df, vis_df)
         
         # modes
         modes                   = values.get('modes').replace(' ', '').split(',')
-        print(modes)
         mode_pred               = True if (('prediction' in modes) and pred_df) else False
         mode_heatmap            = True if (('heatmap'    in modes) and pred_df) else False
         
