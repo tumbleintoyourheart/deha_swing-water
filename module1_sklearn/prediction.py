@@ -1,4 +1,5 @@
 # 機械学習
+import json
 import pandas as pd
 import numpy as np
 import pickle
@@ -40,13 +41,3 @@ def predict(input_json, model_modes, scaler, model1, model2):
         print(f'std: {pred_normed}.')
     else: pred_normed = None
     return pred_unnormed, pred_normed
-    
-if __name__ == '__main__':
-    input_csv   = Path('./csv')/'200302_atg_dsp_prediction.csv'
-    input_df    = pd.read_csv(input_csv)
-    
-    scaler      = pickle.load(open(Path('./models')/'1'/'scaler_of_200310_atg_dsp_sk_rf_std.pickle', 'rb'))
-    model1      = pickle.load(open(Path('./models')/'1'/'200310_atg_dsp_sk_rf_nos.pickle', mode='rb'))
-    model2      = pickle.load(open(Path('./models')/'1'/'200310_atg_dsp_sk_rf_std.pickle', mode='rb'))
-    
-    predict(input_df, 'nos', scaler, model1, model2)

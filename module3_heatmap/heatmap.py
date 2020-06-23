@@ -39,29 +39,37 @@ def simulation(input_df, model, scaler, sim_name1='no2poly_m3_h', sim_name2='fe_
     pred_df         = input_df
     # pred_df         = input_df.drop(columns=["Unnamed: 0"])
     
-    pred_df_scaled     = scaler.transform(pred_df) if (scaler != None) else pred_df
-        
+    # pred_df = np.array(pred_df)[0].reshape(1, -1)
+#     pred_df = np.array([[1.10e+01, 1.00e+00, 1.10e+01, 1.49e+00, 0.00e+00, 4.80e+01, 8.00e+00, 6.00e-01,
+#   1.30e-01, 2.40e+02]])
+# 
+    # pred_df_scaled     = scaler.transform(pred_df) if (scaler != None) else pred_df
+    pred_df_scaled  = scaler.transform(pred_df)
     pred            = model.predict(pred_df_scaled)
     pred_df['pred'] = pred
+    # print(pred_df, pred)
     
-    pred_df.plot(
-                kind="scatter",
-                x=sim_name1,
-                y=sim_name2,
-                alpha=0.4,
-                s=pred,
-                label="moisture%",
-                figsize=(10,7),
-                cmap=plt.get_cmap("jet"),
-                colorbar=True,
-                c="pred"
-                )
-    plt.legend()
-    if show:    plt.show()
-    plt.savefig('./module3_heatmap/heatmap.png', dpi=200)
+    # print(pred_df.iloc[0, :])
     
-    # print(pred_df[sim_name1].to_numpy)
+    # pred_df.plot(
+    #             kind="scatter",
+    #             x=sim_name1,
+    #             y=sim_name2,
+    #             alpha=0.4,
+    #             s=pred,
+    #             label="moisture%",
+    #             figsize=(10,7),
+    #             cmap=plt.get_cmap("jet"),
+    #             colorbar=True,
+    #             c="pred"
+    #             )
+    # plt.legend()
+    # if show:    plt.show()
+    # plt.savefig('./module3_heatmap/heatmap.png', dpi=200)
+    
+    # # print(pred_df[sim_name1].to_numpy)
     return          pred_df[[sim_name1, sim_name2, 'pred']], pred_df
+    # return None, None
 
 
 def summary(input_df, model, scaler, show=False):
@@ -86,6 +94,7 @@ def summary(input_df, model, scaler, show=False):
 
 if __name__=='__main__':
     # sim_input       = get_sim_input('./200302_A01_prediction.csv')
-    model           = pickle.load(open('./200310_atg_dsp_sk_rf_std.pickle', 'rb'))
-    scaler          = pickle.load(open('./scaler.pickle', 'rb'))
-    simulation(pd.read_csv('./simulation.csv'), model, scaler, show=True)
+    model           = pickle.load(open('./200622_mmm_2sp_sk_rf_std.pickle', 'rb'))
+    scaler          = pickle.load(open('./scaler_of_200622_mmm_2sp_sk_rf_std.pickle', 'rb'))
+    sim_input = pd.read_csv('./simulation.csv').drop(columns=["Unnamed: 0"])
+    simulation(sim_input, model, scaler, show=True)

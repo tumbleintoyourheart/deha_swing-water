@@ -154,7 +154,7 @@ def ai():
                     tf_std_model            = load_model(tf_path/'models'/device_id/m)
                     tf_std_model_name       = m
         else: return                        'モデルを指示してください。'
-
+        print(f'Loaded model: {m}')
         
         # init scalers
         if 'sklearn' in modules:
@@ -163,8 +163,10 @@ def ai():
                 if not os.path.isfile(sklearn_scaler_path):
                     return                  f'scaler_of_{sklearn_std_model_name.split(".")[0]}.pickle not found.'
                 sklearn_scaler              = pickle.load(open(sklearn_scaler_path, 'rb'))
+                print(f'Loaded scaler: {sklearn_scaler_path}')
             else: sklearn_scaler            = None
             sklearn_models                  = [sklearn_scaler, sklearn_nos_model, sklearn_std_model]
+            
             
         if 'tensorflow' in modules:
             if tf_std:
@@ -172,8 +174,10 @@ def ai():
                 if not os.path.isfile(tf_scaler_path):
                     return                  f'scaler_of_{tf_std_model_name.split(".")[0]}.pickle not found.'
                 tf_scaler                   = pickle.load(open(tf_scaler_path, 'rb'))
+                print(f'Loaded scaler: {tf_scaler_path}')
             else: tf_scaler                 = None
             tf_models                       = [tf_scaler, tf_nos_model, tf_std_model]
+            
         
         
         # input dataframes
