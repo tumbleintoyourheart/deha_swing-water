@@ -124,6 +124,7 @@ def ai():
         
         # input dataframes
         pred_df                 = values.get('prediction_dataframe')
+        print(pred_df)
         vis_df                  = values.get('visualize_dataframe')
         
         # modes
