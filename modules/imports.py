@@ -7,3 +7,4 @@ from    itertools                           import product
 from    collections                         import OrderedDict 
 
 from    renom_rg.api.interface.regressor    import Regressor
+from    sklearn.metrics                     import mean_absolute_error, mean_squared_error, r2_score
