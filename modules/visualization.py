@@ -2,7 +2,7 @@ from .imports import *
 
 
 
-def visualization(regressor, scaler_x_path, scaler_y_path, input_json, mode):
+def visualize(regressor, scaler_x_path, scaler_y_path, input_json, mode):
     input       = json.loads(input_json)
     input       = pd.DataFrame(input)
     input_pred  = input.drop(columns=["day", "moisture_per"])

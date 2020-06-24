@@ -1,6 +1,6 @@
 from modules.imports        import *
-from modules.prediction     import prediction
-from modules.visualization  import visualization
+from modules.prediction     import predict
+from modules.visualization  import visualize
 from modules.heatmap        import *
 from modules.utils          import *
 
@@ -140,7 +140,7 @@ def ai():
                                    'std': {}}
         if mode_pred:
             try:
-                pred            = prediction(regressor, *scalers_path, pred_df, mode)
+                pred            = predict(regressor, *scalers_path, pred_df, mode)
             except Exception as e:
                 tb              = traceback.format_exc()
                 print(tb)
@@ -151,7 +151,7 @@ def ai():
 
         if mode_vis:
             try:
-                pred            = visualization(regressor, *scalers_path, vis_df, mode)
+                pred            = visualize(regressor, *scalers_path, vis_df, mode)
             except Exception as e:
                 tb              = traceback.format_exc()
                 print(tb)
