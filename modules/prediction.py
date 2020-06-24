@@ -5,6 +5,7 @@ from .imports import *
 def prediction(regressor, scaler_x_path, scaler_y_path, input_json, mode):
     input       = pd.read_json(input_json, typ='series')
     input       = pd.DataFrame([input])
+    print(input)
     
     x_col       = pd.DataFrame(input, columns=list(input.columns))
     print(mode)
