@@ -15,7 +15,7 @@ requests.post(deploy_api)
 regressor = Regressor(url, PORT)
 regressor.pull()
 
-pred_data = pd.read_csv("prediction.csv")
+data = pd.read_csv("prediction.csv")
 
 setsumei_list = list(pred_data.columns)
 y_col = pd.DataFrame(data, columns=['mokuteki'])
