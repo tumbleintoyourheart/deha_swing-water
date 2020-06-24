@@ -136,51 +136,48 @@ def ai():
         print(mode_pred, mode_heatmap, mode_vis, mode_summary)
         
         
-        response['Renom']       = {'nos': {},
-                                   'std': {}}
+        response['Renom']       = {mode: {}}
         if mode_pred:
             try:
-                pred            = predict(regressor, *scalers_path, pred_df, mode)
+                pred_res        = predict(regressor, *scalers_path, pred_df, mode)
             except Exception as e:
                 tb              = traceback.format_exc()
                 print(tb)
                 tb              = tb.split('\n')[-2]
                 return          jsonify(Error='インポートしたCSVファイルに誤りがあります。')
-            pred                = '{:.2f}'.format(pred[0][0])
-            response['Renom'][mode]['Prediction'] = pred
+            pred_res            = '{:.2f}'.format(pred_res[0][0])
+            response['Renom'][mode]['Prediction'] = pred_res
 
         if mode_vis:
             try:
-                pred            = visualize(regressor, *scalers_path, vis_df, mode)
+                vis_res         = visualize(regressor, *scalers_path, vis_df, mode)
             except Exception as e:
                 tb              = traceback.format_exc()
                 print(tb)
                 tb              = tb.split('\n')[-2]
                 return          jsonify(Error='インポートしたCSVファイルに誤りがあります。')
-            response['Renom'][mode]['Visualization'] = {'Sorted predictions': pred}
+            response['Renom'][mode]['Visualization'] = {'Sorted predictions'   : vis_res['sorted_pred'],
+                                                        'R2'                   : vis_res['r2'],
+                                                        'MAE1'                 : vis_res['mae1'],
+                                                        'MAE2'                 : vis_res['mae2'],
+                                                        'MSE'                  : vis_res['mse'],
+                                                        'RMSE'                 : vis_res['rmse']}
                 
         if mode_heatmap:
-                response['Renom']['nos']['Heatmap']  = {}
-                response['Renom']['std']['Heatmap']  = {}
-                response['Renom']['nos']['Download'] = {}
-                response['Renom']['std']['Download'] = {}
-                
-                range1          = values.get('range1').replace(' ', '').split(',')
-                sim_name1       = range1[0]
-                sim_range1      = [float(x) for x in range1[1:]]
-                
-                range2          = values.get('range2').replace(' ', '').split(',')
-                sim_name2       = range2[0]
-                sim_range2      = [float(x) for x in range2[1:]]
-                
-                sim_input       = get_sim_input(pred_df, sim_name1, sim_range1, sim_name2, sim_range2)
-                
-                sim_df, download_df = simulation(sim_input, regressor, *scalers_path, mode, sim_name1, sim_name2)
-       
-                for col in list(sim_df.columns):
-                    response['Renom'][mode]['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
-                for col in list(download_df.columns):
-                    response['Renom'][mode]['Download'][col]    = download_df[col].to_numpy().tolist()
+            response['Renom'][mode] = {'Heatmap'    : {},
+                                       'Download'   : {}}
+
+            
+            range1                              = values.get('range1').replace(' ', '').split(',')
+            range2                              = values.get('range2').replace(' ', '').split(',')
+            sim_input, sim_name1, sim_name2     = get_sim_input(pred_df, sim_name1, sim_range1, sim_name2, sim_range2)
+            
+            sim_df, download_df                 = simulation(sim_input, regressor, *scalers_path, mode, sim_name1, sim_name2)
+    
+            for col in list(sim_df.columns):
+                response['Renom'][mode]['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
+            for col in list(download_df.columns):
+                response['Renom'][mode]['Download'][col]    = download_df[col].to_numpy().tolist()
 
                 
         return                  jsonify(response)
