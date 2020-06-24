@@ -6,7 +6,8 @@ def predict(regressor, scaler_x_path, scaler_y_path, input_json, mode):
     input_json  = pd.read_json(input_json, typ='series')
     input_df    = pd.DataFrame([input_json])
     print(input_df)
-    x_col       = pd.DataFrame(input, columns=list(input.columns))
+    # x_col       = pd.DataFrame(input_df, columns=list(input.columns))
+    x_col       = input_df
     
     if mode     == 'nos':
         pred    = regressor.predict(np.array(x_col))
