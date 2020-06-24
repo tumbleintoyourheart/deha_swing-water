@@ -6,8 +6,8 @@ import requests
 from sklearn import preprocessing
 from renom_rg.api.interface.regressor import Regressor
 
-HOST = "13.230.125.129"
-PORT = "80"
+HOST = "localhost"
+PORT = "8080"
 url = "http://{}".format(HOST)
 model_id = '7'
 deploy_api = url + ':' + PORT + '/api/renom_rg/models/' + model_id + '/deploy'
