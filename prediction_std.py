@@ -26,6 +26,7 @@ with open("./6/scaler_x_of_model_id_7.pickle", mode='rb') as f:
 with open("./6/scaler_y_of_model_id_7.pickle", mode='rb') as f:
     scaler_y_standardization = pickle.load(f)
 
+print(x_col)
 np_x_col = scaler_X_standardization.transform(np.array(x_col))
 
 pre = regressor.predict(np_x_col)
