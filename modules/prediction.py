@@ -4,17 +4,15 @@ from .imports import *
 
 def prediction(regressor, scaler_x_path, scaler_y_path, input_json, mode):
     input       = pd.read_json(input_json, typ='series')
-    input       = pd.DataFrame([input])
-    print(input)
+    print(input, type(input))
+    input_df    = pd.DataFrame([input])
+    # input_df    = input_df.reindex(columns=list(input_json.keys()))
     
     x_col       = pd.DataFrame(input, columns=list(input.columns))
-    print(mode)
-    print(x_col)
-    print(scaler_x_path, scaler_y_path)
+    print(x_col, type(x_col))
     
     if mode     == 'nos':
         pred    = regressor.predict(np.array(x_col))
-        return  pred
 
     elif mode   == 'std':
         scaler_x    = pickle.load(open(scaler_x_path, mode='rb'))
@@ -22,4 +20,6 @@ def prediction(regressor, scaler_x_path, scaler_y_path, input_json, mode):
         np_x_col    = scaler_x.transform(np.array(x_col))
         pred        = regressor.predict(np_x_col)
         pred        = scaler_y.inverse_transform(pred)
-        return      pred
+    
+    print(pred)
+    return pred
