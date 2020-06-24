@@ -3,9 +3,9 @@ from .imports import *
 
 
 def prediction(regressor, scaler_x_path, scaler_y_path, input_json, mode):
-    # print(input_json, type(input_json))
-    # input_json  = OrderedDict(input_json)
-    # print(input_json)
+    print(input_json, type(input_json))
+    input_json  = OrderedDict(input_json)
+    print(input_json)
     input_json  = pd.read_json(input_json, typ='series')
     print(input_json, type(input_json))
     input_df    = pd.DataFrame([input_json])
