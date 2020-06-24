@@ -5,7 +5,7 @@ from .imports import *
 def visualize(regressor, scaler_x_path, scaler_y_path, input_json, mode):
     input_json      = json.loads(input_json)
     input_df        = pd.DataFrame(input_json)
-    input_pred      = input.drop(columns=["day", "moisture_per"])
+    input_pred      = input_df.drop(columns=["day", "moisture_per"])
 
     x_col           = input_pred
     print(x_col.head(), x_col.shape)
