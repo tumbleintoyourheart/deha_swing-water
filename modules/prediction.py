@@ -3,12 +3,13 @@ from .imports import *
 
 
 def prediction(regressor, scaler_x_path, scaler_y_path, input_json, mode):
+    # print(input_json, type(input_json))
+    # input_json  = OrderedDict(input_json)
+    # print(input_json)
+    input_json  = pd.read_json(input_json, typ='series')
     print(input_json, type(input_json))
-    input_json  = OrderedDict(input_json)
-    print(input_json)
-    input       = pd.read_json(input_json, typ='series')
-    print(input, type(input))
-    input_df    = pd.DataFrame([input])
+    input_df    = pd.DataFrame([input_json])
+    print(input_df, type(input_df))
     # input_df    = input_df.reindex(columns=list(input_json.keys()))
     
     x_col       = pd.DataFrame(input, columns=list(input.columns))
