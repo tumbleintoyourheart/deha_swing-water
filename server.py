@@ -170,7 +170,7 @@ def ai():
             
             range1                              = values.get('range1').replace(' ', '').split(',')
             range2                              = values.get('range2').replace(' ', '').split(',')
-            sim_input, sim_name1, sim_name2     = get_sim_input(pred_df, sim_name1, sim_range1, sim_name2, sim_range2)
+            sim_input, sim_name1, sim_name2     = get_sim_input(pred_df, range1, range2)
             
             sim_df, download_df                 = simulation(sim_input, regressor, *scalers_path, mode, sim_name1, sim_name2)
     

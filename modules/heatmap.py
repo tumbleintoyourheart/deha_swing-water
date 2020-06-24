@@ -1,7 +1,7 @@
 from .imports import *
 
 
-def get_sim_input(input_json, sim_name1='no2poly_m3_h', sim_range1=(0, 2, 0.025), sim_name2='fe_m3_h', sim_range2=(15, 25, 0.1)):
+def get_sim_input(input_json, range1, range2):
     input_df                = pd.read_json(input_json, typ='series')
     input_df                = pd.DataFrame([input_df])
 
