@@ -95,6 +95,7 @@ def ai():
         model_id                = values.get('model_id')
         if model_id             == None: return 'モデルIDを指示してください。'
         try:
+            print('model_id: {}'.format(model_id))
             regressor           = models[model_id]
         except Exception as e:
             tb                  = traceback.format_exc()

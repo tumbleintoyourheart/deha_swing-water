@@ -21,9 +21,9 @@ setsumei_list = list(data.columns)
 y_col = pd.DataFrame(data, columns=['mokuteki'])
 x_col = pd.DataFrame(data, columns=setsumei_list)
 
-with open("./scaler_x.pickle", mode='rb') as f:
+with open("./6/scaler_x_of_model_id_7.pickle", mode='rb') as f:
     scaler_X_standardization = pickle.load(f)
-with open("./scaler_y.pickle", mode='rb') as f:
+with open("./6/scaler_y_of_model_id_7.pickle", mode='rb') as f:
     scaler_y_standardization = pickle.load(f)
 
 np_x_col = scaler_X_standardization.transform(np.array(x_col))
