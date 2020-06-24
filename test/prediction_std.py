@@ -17,7 +17,7 @@ regressor.pull()
 
 data = pd.read_csv("prediction.csv")
 
-setsumei_list = list(pred_data.columns)
+setsumei_list = list(data.columns)
 y_col = pd.DataFrame(data, columns=['mokuteki'])
 x_col = pd.DataFrame(data, columns=setsumei_list)
 
