@@ -221,8 +221,7 @@ def ai():
                                                                          'RMSE'                 : vis_res['rmse']}
  
             if mode_heatmap:
-                response['Scikit-learn'][model_mode]    = {'Heatmap'   : {},
-                                                           'Download'  : {}}
+                response['Scikit-learn'][model_mode].update({'Heatmap': {}, 'Download': {}})
           
                 range1                                  = values.get('range1').replace(' ', '').split(',')
                 range2                                  = values.get('range2').replace(' ', '').split(',')
@@ -271,22 +270,21 @@ def ai():
                                                                         'MSE'                  : vis_res['mse'],
                                                                         'RMSE'                 : vis_res['rmse']}
                     
-            if mode_heatmap:
-                response['Tensorflow'][model_mode]      = {'Heatmap'   : {}, 
-                                                            'Download'  : {}}
-        
-                range1                                  = values.get('range1').replace(' ', '').split(',')
-                range2                                  = values.get('range2').replace(' ', '').split(',')
-                sim_input, sim_name1, sim_name2         = get_sim_input(pred_df, range1, range2)
-                sim_df, download_df                     = simulation(sim_input, tf_model, tf_scaler, sim_name1, sim_name2)
-                
-                for col in list(sim_df.columns):
-                    response['Tensorflow'][model_mode]['Heatmap'][col]    = sim_df[col].to_numpy().tolist()
-                for col in list(download_df.columns):
-                    response['Tensorflow'][model_mode]['Download'][col]   = download_df[col].to_numpy().tolist()
-                print(sim_df.head())
+                if mode_heatmap:
+                    response['Tensorflow'][model_mode].update({'Heatmap': {}, 'Download': {}})
+            
+                    range1                                  = values.get('range1').replace(' ', '').split(',')
+                    range2                                  = values.get('range2').replace(' ', '').split(',')
+                    sim_input, sim_name1, sim_name2         = get_sim_input(pred_df, range1, range2)
+                    sim_df, download_df                     = simulation(sim_input, tf_model, tf_scaler, sim_name1, sim_name2)
+                    
+                    for col in list(sim_df.columns):
+                        response['Tensorflow'][model_mode]['Heatmap'][col]    = sim_df[col].to_numpy().tolist()
+                    for col in list(download_df.columns):
+                        response['Tensorflow'][model_mode]['Download'][col]   = download_df[col].to_numpy().tolist()
+                    print(sim_df.head())
                         
-                return jsonify(response)
+            return jsonify(response)
         
 
                     
