@@ -1,0 +1,24 @@
+from    ..imports       import *
+
+
+def visualize(input_json, model, scaler):
+    input_json          = json.loads(input_json)
+    input_df            = pd.DataFrame(input_json)
+    input_pred          = input_df.drop(columns=["day", "moisture_per"])
+    input_pred_scaled   = scaler.transform(input_pred) if scaler != None else input_pred
+    
+    pred                = model.predict(input_pred_scaled)
+    sorted_pred         = [x[0] for _, x in sorted(zip(input_df['day'].tolist(), pred.tolist()), key=lambda Zip: Zip[0])]
+
+    r2                  = round(r2_score(input_df["moisture_per"], pred), 2)
+    mae1                = round(mean_absolute_error(input_df["moisture_per"], pred), 2)
+    # temp                = (input_df["moisture_per"] - pred).flatten()
+    # mae2                = round(max(abs(temp)), 2)
+    mse                 = round(mean_squared_error(input_df["moisture_per"], pred), 2)
+    rmse                = round(np.sqrt(mean_squared_error(input_df["moisture_per"], pred)), 2)
+    
+    return {'sorted_pred': sorted_pred, 'r2': r2,
+             'mae1': mae1, 
+            #  'mae2': mae2, 
+             'mse': mse, 
+             'rmse': rmse}
