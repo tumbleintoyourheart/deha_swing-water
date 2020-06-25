@@ -1,19 +1,9 @@
 # -*- coding: utf-8 -*- 
-import  os, sys, argparse, pickle, re, copy, argparse, warnings, json
-from    pathlib                             import *
+from    modules.imports                     import *
 
-from    flask                               import Flask, jsonify, request
+from    flask                               import Flask, jsonify, request, Response
 from    flask_cors                          import CORS
 from    werkzeug.utils                      import secure_filename
-import  traceback
-
-from    module1_sklearn.prediction          import predict      as sklearn_pred
-from    module1_sklearn.visualdata          import visualize    as sklearn_vis
-
-from    module2_tf.prediction               import predict      as tf_pred
-from    module2_tf.visualdata               import visualize    as tf_vis
-
-from    module3_heatmap.heatmap             import *
 
 import  keras
 import  tensorflow                                              as tf
@@ -21,19 +11,26 @@ from    tensorflow.python.keras.backend     import set_session
 from    tensorflow.python.keras.models      import load_model
 from    tensorflow.python.util              import deprecation
 
+from    modules.module1_sklearn.prediction  import predict      as sk_pred
+from    modules.module1_sklearn.visualdata  import visualize    as sk_vis
+from    modules.module2_tf.prediction       import predict      as tf_pred
+from    modules.module2_tf.visualdata       import visualize    as tf_vis
+from    modules.module3_heatmap.heatmap     import *
 
 
-for w in [UserWarning, FutureWarning, DeprecationWarning]: warnings.filterwarnings("ignore", category=w)
 
-os.environ['TF_CPP_MIN_LOG_LEVEL']      = '3'
-os.environ['KMP_WARNINGS']              = '0'
+for w in [UserWarning, FutureWarning, DeprecationWarning]:
+    warnings.filterwarnings("ignore", category=w)
 
-deprecation._PRINT_DEPRECATION_WARNINGS = False
+os.environ['TF_CPP_MIN_LOG_LEVEL']          = '3'
+os.environ['KMP_WARNINGS']                  = '0'
 
-parser  = argparse.ArgumentParser()
+deprecation._PRINT_DEPRECATION_WARNINGS     = False
+
+parser                                      = argparse.ArgumentParser()
 parser.add_argument('--port', '-p', type=int, default=5000)
 
-app     = Flask(__name__); CORS(app)
+app                                         = Flask(__name__); CORS(app)
 
 
 
@@ -94,12 +91,35 @@ def new_model():
 @app.route('/ai', methods=['GET', 'POST'])
 def ai():
     if request.method       == 'POST':
+        global             graph, sess
+        sess               = tf.Session()
+        graph              = tf.get_default_graph()
+        set_session(sess)
+        
         response            = {}
         
         
         # from request
         values              = request.values.to_dict()
         files               = request.files.to_dict()
+        
+        # input df
+        pred_df                             = values.get('prediction_dataframe')
+        vis_df                              = values.get('visualize_dataframe')
+        
+        # modes
+        modes                               = values.get('modes').replace(' ', '').split(',')
+        mode_pred                           = True if (('prediction' in modes) and pred_df) else False
+        mode_heatmap                        = True if (('heatmap'    in modes) and pred_df) else False
+        mode_vis                            = True if (('visualize'  in modes) and vis_df)  else False
+        mode_summary                        = True if (('summary'    in modes) and vis_df)  else False
+        print(mode_pred, mode_heatmap, mode_vis, mode_summary)
+        
+        if mode_summary:
+            print('summary mode')
+            response['Summary'] = {}
+            summary_df          = summary(vis_df)
+            return              Response(summary_df.to_json(orient="records"), mimetype='application/json')
         
         
         # device_id
@@ -110,250 +130,166 @@ def ai():
         # init models
         sklearn_nos, sklearn_std, tf_nos, tf_std                            = False, False, False, False
         sklearn_nos_model, sklearn_std_model, tf_nos_model, tf_std_model    = None, None, None, None
-        modules, model_modes                                                = set(), set()
-        available_sk_models     = [m.name for m in list((sklearn_path/'models'/device_id).rglob('*.pickle')) if 'scaler' not in m.name]
-        available_tf_models     = [m.name for m in list((tf_path/'models'/device_id).rglob('*.hdf5'))]
-        available_models        = available_sk_models + available_tf_models
+
+        available_sk_models  = [m.name for m in list((sklearn_path/'models'/device_id).rglob('*.pickle')) if 'scaler' not in m.name]
+        available_tf_models  = [m.name for m in list((tf_path/'models'/device_id).rglob('*.hdf5'))]
+        available_models     = available_sk_models + available_tf_models
         
         if values.get('models'):
-            models          = values['models'].replace(' ', '').split(',')
+            model_name                  = values['models']
             
-            global          graph, sess
-            sess            = tf.Session()
-            graph           = tf.get_default_graph()
-            set_session(sess)
             
-            for m in models:
-                if m not in available_models: return f'Not available models. Current available models for device_id {device_id}: {available_models}.'
+            print(model_name)
+            if model_name not in available_models:
+                print('not available model')
+                return f'Not available models. Current available models for device_id {device_id}: {available_models}.'
+            
+            # nos or std?
+            if      'nos'   in model_name:
+                model_mode              = 'nos'
+            elif    'std'   in model_name:
+                model_mode              = 'std'
+            # else: return              f''
+            print(model_mode)
+            
+            # sklearn or tf?
+            if      'sk'    in model_name:
+                module                  = 'sklearn'
+                sklearn_model_name      = model_name
+                sklearn_model           = pickle.load(open(sklearn_path/'models'/device_id/model_name, 'rb'))
                 
-                elif re.search(r'sk\w*nos.pickle', m):
-                    sklearn_nos             = True
-                    modules.add('sklearn')
-                    model_modes.add('nos')
-                    sklearn_nos_model       = pickle.load(open(sklearn_path/'models'/device_id/m, 'rb'))
-                    sklearn_nos_model_name  = m
-                    
-                elif re.search(r'sk\w*std.pickle', m):
-                    sklearn_std             = True
-                    modules.add('sklearn')
-                    model_modes.add('std')
-                    sklearn_std_model       = pickle.load(open(sklearn_path/'models'/device_id/m, 'rb'))
-                    sklearn_std_model_name  = m
-                    
-                elif re.search(r'tf\w*nos.hdf5', m):
-                    tf_nos                  = True
-                    modules.add('tensorflow')
-                    model_modes.add('nos')
-                    tf_nos_model            = load_model(tf_path/'models'/device_id/m)
-                    tf_nos_model_name       = m
-                    
-                elif re.search(r'tf\w*std.hdf5', m):
-                    tf_std                  = True
-                    modules.add('tensorflow')
-                    model_modes.add('std')
-                    tf_std_model            = load_model(tf_path/'models'/device_id/m)
-                    tf_std_model_name       = m
-        else: return                        'モデルを指示してください。'
-        print(f'Loaded model: {m}')
+            elif    'tf'    in model_name:
+                module                  = 'tensorflow'
+                tf_model_name           = model_name
+                tf_model                = load_model(tf_path/'models'/device_id/model_name)
+            # else: return                f''
+            print(f'module: {module}')
+        print(f'Loaded model: {model_name}')
         
+
+
         # init scalers
-        if 'sklearn' in modules:
-            if sklearn_std:
-                sklearn_scaler_path         = sklearn_path/'models'/device_id/f'scaler_of_{sklearn_std_model_name.split(".")[0]}.pickle'
+        sklearn_scaler, tf_scaler           = None, None
+        sklearn_scaler_name, tf_scaler_name = None, None
+        
+        if model_mode                       == 'std':
+            if      module                  == 'sklearn':
+                sklearn_scaler_name         = f'scaler_of_{sklearn_model_name.split(".")[0]}.pickle'
+                sklearn_scaler_path         = sklearn_path/'models'/device_id/sklearn_scaler_name
                 if not os.path.isfile(sklearn_scaler_path):
-                    return                  f'scaler_of_{sklearn_std_model_name.split(".")[0]}.pickle not found.'
+                    return                  f'{sklearn_scaler_name} not found.'
                 sklearn_scaler              = pickle.load(open(sklearn_scaler_path, 'rb'))
                 print(f'Loaded scaler: {sklearn_scaler_path}')
-            else: sklearn_scaler            = None
-            sklearn_models                  = [sklearn_scaler, sklearn_nos_model, sklearn_std_model]
-            
-            
-        if 'tensorflow' in modules:
-            if tf_std:
-                tf_scaler_path              = tf_path/'models'/device_id/f'scaler_of_{tf_std_model_name.split(".")[0]}.pickle'
+            elif    module                  == 'tensorflow':
+                tf_scaler_name              = f'scaler_of_{tf_model_name.split(".")[0]}.pickle'
+                tf_scaler_path              = tf_path/'models'/device_id/tf_scaler_name
                 if not os.path.isfile(tf_scaler_path):
-                    return                  f'scaler_of_{tf_std_model_name.split(".")[0]}.pickle not found.'
+                    return                  f'{tf_scaler_name} not found.'
                 tf_scaler                   = pickle.load(open(tf_scaler_path, 'rb'))
                 print(f'Loaded scaler: {tf_scaler_path}')
-            else: tf_scaler                 = None
-            tf_models                       = [tf_scaler, tf_nos_model, tf_std_model]
+        
+        
+        
+        if module == 'sklearn':
+            response['Scikit-learn']        = {model_mode: {'Model': sklearn_model_name}}
             
-        
-        
-        # input dataframes
-        pred_df                             = values.get('prediction_dataframe')
-        vis_df                              = values.get('visualize_dataframe')
-        
-        # modes
-        modes                               = values.get('modes').replace(' ', '').split(',')
-        mode_pred                       = True if (('prediction' in modes) and pred_df) else False
-        mode_heatmap                    = True if (('heatmap'    in modes) and pred_df) else False
-        
-        mode_vis                        = True if (('visualize'  in modes) and vis_df)  else False
-        mode_summary                    = True if (('summary'    in modes) and vis_df)  else False
-        print(mode_pred, mode_heatmap, mode_vis, mode_summary)
-        
-        
-        for module in modules:
-            if module == 'sklearn':
-                response['Scikit-learn'] = {'nos': {},
-                                            'std': {}}
+            if mode_pred:
+                try:
+                    pred_res = sk_pred(pred_df, sklearn_model, sklearn_scaler)
+                except Exception as e:
+                    tb = traceback.format_exc()
+                    print(tb)
+                    tb = tb.split('\n')[-2]
+                    return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
                 
-                if sklearn_nos: response['Scikit-learn']['nos']['Model'] = sklearn_nos_model_name
-                if sklearn_std: response['Scikit-learn']['std']['Model'] = sklearn_std_model_name
+                response['Scikit-learn'][model_mode]['Prediction'] = f'{pred_res[0]:.2f}'
+
+            if mode_vis:
+                try:
+                    vis_res = sk_vis(vis_df, sklearn_model, sklearn_scaler)
+                except Exception as e:
+                    tb = traceback.format_exc()
+                    print(tb)
+                    tb = tb.split('\n')[-2]
+                    return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
+                
+                response['Scikit-learn'][model_mode]['Visualization'] = {'Sorted predictions'   : vis_res['sorted_pred'],
+                                                                         'R2'                   : vis_res['r2'],
+                                                                         'MAE1'                 : vis_res['mae1'],
+                                                                         'MAE2'                 : vis_res['mae2'],
+                                                                         'MSE'                  : vis_res['mse'],
+                                                                         'RMSE'                 : vis_res['rmse']}
+ 
+            if mode_heatmap:
+                response['Scikit-learn'][model_mode]    = {'Heatmap'   : {},
+                                                           'Download'  : {}}
+          
+                range1                                  = values.get('range1').replace(' ', '').split(',')
+                range2                                  = values.get('range2').replace(' ', '').split(',')
+                sim_input, sim_name1, sim_name2         = get_sim_input(pred_df, range1, range2)
+                sim_df, download_df                     = simulation(sim_input, sklearn_model, sklearn_scaler, sim_name1, sim_name2)
+                
+                for col in list(sim_df.columns):
+                    response['Scikit-learn'][model_mode]['Heatmap'][col]    = sim_df[col].to_numpy().tolist()
+                for col in list(download_df.columns):
+                    response['Scikit-learn'][model_mode]['Download'][col]   = download_df[col].to_numpy().tolist()
+                print(sim_df.head())
+                
+            return jsonify(response)
+                        
+        
+        elif module == 'tensorflow':
+            response['Tensorflow']                  = {model_mode: {'Model': tf_model_name}}
+
+            with graph.as_default():
+                set_session(sess)
                 
                 if mode_pred:
                     try:
-                        pred_res = sklearn_pred(pred_df, model_modes, *sklearn_models)
+                        pred_res = tf_pred(pred_df, tf_model, tf_scaler)
                     except Exception as e:
                         tb = traceback.format_exc()
                         print(tb)
                         tb = tb.split('\n')[-2]
                         return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
-                    def beautify(res): 
-                        if res != None: return f'{res[0]:.2f}'
-                        else: return res
-                    pred_res = list(map(beautify, pred_res))
-                    if sklearn_nos: response['Scikit-learn']['nos']['Prediction'] = pred_res[0]
-                    if sklearn_std: response['Scikit-learn']['std']['Prediction'] = pred_res[1]
-
+                    
+                    response['Tensorflow'][model_mode]['Prediction'] = f'{pred_res[0][0]:.2f}'
+                
                 if mode_vis:
                     try:
-                        vis_res = sklearn_vis(vis_df, model_modes, figs_savedir, False, *sklearn_models)
+                        vis_res = tf_vis(vis_df, tf_model, tf_scaler)
                     except Exception as e:
                         tb = traceback.format_exc()
                         print(tb)
                         tb = tb.split('\n')[-2]
                         return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
-                    if sklearn_nos:
-                        response['Scikit-learn']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
-                                                                'R2': vis_res[0][1],
-                                                                'RMSE': vis_res[0][2],
-                                                                'Sorted predictions': vis_res[0][3]}
-                    if sklearn_std:
-                        response['Scikit-learn']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
-                                                                'R2': vis_res[1][1],
-                                                                'RMSE': vis_res[1][2],
-                                                                'Sorted predictions': vis_res[1][3]}
-                
-                if mode_heatmap:
-                    response['Scikit-learn']['nos']['Heatmap']  = {}
-                    response['Scikit-learn']['std']['Heatmap']  = {}
-                    response['Scikit-learn']['nos']['Download'] = {}
-                    response['Scikit-learn']['std']['Download'] = {}
                     
-                    range1      = values.get('range1').replace(' ', '').split(',')
-                    sim_name1   = range1[0]
-                    sim_range1  = [float(x) for x in range1[1:]]
+                    response['Tensorflow'][model_mode]['Visualization'] = {'Sorted predictions'   : vis_res['sorted_pred'],
+                                                                        'R2'                   : vis_res['r2'],
+                                                                        'MAE1'                 : vis_res['mae1'],
+                                                                        # 'MAE2'                 : vis_res['mae2'],
+                                                                        'MSE'                  : vis_res['mse'],
+                                                                        'RMSE'                 : vis_res['rmse']}
                     
-                    range2      = values.get('range2').replace(' ', '').split(',')
-                    sim_name2   = range2[0]
-                    sim_range2  = [float(x) for x in range2[1:]]
-                    
-                    sim_input   = get_sim_input(pred_df, sim_name1, sim_range1, sim_name2, sim_range2)
-                    
-                    if sklearn_nos_model != None:
-                        sim_df, download_df = simulation(sim_input, sklearn_nos_model, None, sim_name1, sim_name2)
-                        for col in list(sim_df.columns):
-                            response['Scikit-learn']['nos']['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
-                        for col in list(download_df.columns):
-                            response['Scikit-learn']['nos']['Download'][col]    = download_df[col].to_numpy().tolist()
-                            
-                    if sklearn_std_model != None:
-                        sim_df, download_df = simulation(sim_input, sklearn_std_model, sklearn_scaler, sim_name1, sim_name2)
-                        for col in list(sim_df.columns):
-                            response['Scikit-learn']['std']['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
-                        for col in list(download_df.columns):
-                            response['Scikit-learn']['std']['Download'][col]    = download_df[col].to_numpy().tolist()
-                            
-                    print(sim_df.head())
-                
-                if mode_summary:
-                    if sklearn_nos_model != None:
-                        response['Scikit-learn']['nos']['Summary'] = summary(vis_df, sklearn_nos_model, None)
-                    if sklearn_std_model != None:
-                        response['Scikit-learn']['std']['Summary'] = summary(vis_df, sklearn_std_model, sklearn_scaler)
-                        
-                        
+            if mode_heatmap:
+                response['Tensorflow'][model_mode]      = {'Heatmap'   : {}, 
+                                                            'Download'  : {}}
         
-            elif module == 'tensorflow':
-                response['Tensorflow'] = {'nos': {},
-                                          'std': {}}
+                range1                                  = values.get('range1').replace(' ', '').split(',')
+                range2                                  = values.get('range2').replace(' ', '').split(',')
+                sim_input, sim_name1, sim_name2         = get_sim_input(pred_df, range1, range2)
+                sim_df, download_df                     = simulation(sim_input, tf_model, tf_scaler, sim_name1, sim_name2)
                 
-                if tf_nos: response['Tensorflow']['nos']['Model'] = tf_nos_model_name
-                if tf_std: response['Tensorflow']['std']['Model'] = tf_std_model_name
-                
-                with graph.as_default():
-                    set_session(sess)
-                    
-                    if mode_pred:
-                        try:
-                            pred_res = tf_pred(pred_df, model_modes, *tf_models)
-                        except Exception as e:
-                            tb = traceback.format_exc()
-                            print(tb)
-                            tb = tb.split('\n')[-2]
-                            return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
-                        def beautify(res): 
-                            if res != None: return f'{res[0][0]:.2f}'
-                            else: return res
-                        pred_res = list(map(beautify, pred_res))
-                        if tf_nos: response['Tensorflow']['nos']['Prediction'] = pred_res[0]
-                        if tf_std: response['Tensorflow']['std']['Prediction'] = pred_res[1]
-                    
-                    if mode_vis:
-                        try:
-                            vis_res = tf_vis(vis_df, model_modes, figs_savedir, False, *tf_models)
-                        except Exception as e:
-                            tb = traceback.format_exc()
-                            print(tb)
-                            tb = tb.split('\n')[-2]
-                            return jsonify(Error='インポートしたCSVファイルに誤りがあります。')
-                        if tf_nos: response['Tensorflow']['nos']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[0][0])),
-                                                                                     'R2': vis_res[0][1],
-                                                                                     'RMSE': vis_res[0][2],
-                                                                                     'Sorted predictions': vis_res[0][3]}
-                        if tf_std: response['Tensorflow']['std']['Visualization'] = {'Figure path': str(PurePosixPath(vis_res[1][0])),
-                                                                                     'R2': vis_res[1][1],
-                                                                                     'RMSE': vis_res[1][2],
-                                                                                     'Sorted predictions': vis_res[1][3]}
+                for col in list(sim_df.columns):
+                    response['Tensorflow'][model_mode]['Heatmap'][col]    = sim_df[col].to_numpy().tolist()
+                for col in list(download_df.columns):
+                    response['Tensorflow'][model_mode]['Download'][col]   = download_df[col].to_numpy().tolist()
+                print(sim_df.head())
                         
-                    if mode_heatmap:
-                        response['Tensorflow']['nos']['Heatmap']  = {}
-                        response['Tensorflow']['std']['Heatmap']  = {}
-                        response['Tensorflow']['nos']['Download'] = {}
-                        response['Tensorflow']['std']['Download'] = {}
-                        
-                        range1      = values.get('range1').replace(' ', '').split(',')
-                        sim_name1   = range1[0]
-                        sim_range1  = [float(x) for x in range1[1:]]
-                        
-                        range2      = values.get('range2').replace(' ', '').split(',')
-                        sim_name2   = range2[0]
-                        sim_range2  = [float(x) for x in range2[1:]]
-                        
-                        sim_input   = get_sim_input(pred_df, sim_name1, sim_range1, sim_name2, sim_range2)
-                        
-                        if tf_nos_model != None:
-                            sim_df, download_df = simulation(sim_input, tf_nos_model, None, sim_name1, sim_name2)
-                            for col in list(sim_df.columns):
-                                response['Tensorflow']['nos']['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
-                            for col in list(download_df.columns):
-                                response['Tensorflow']['nos']['Download'][col]    = download_df[col].to_numpy().tolist()
-                                
-                        if tf_std_model != None:
-                            sim_df, download_df = simulation(sim_input, tf_std_model, tf_scaler, sim_name1, sim_name2)
-                            for col in list(sim_df.columns):
-                                response['Tensorflow']['std']['Heatmap'][col]     = sim_df[col].to_numpy().tolist()
-                            for col in list(download_df.columns):
-                                response['Tensorflow']['std']['Download'][col]    = download_df[col].to_numpy().tolist()
-                                
-                        print(sim_df.head())
-                        
-        return jsonify(response)
-                
+                return jsonify(response)
         
-        
+
+                    
     else: return 'Not allowed method.'
 
 
@@ -361,8 +297,8 @@ def ai():
 if __name__ == '__main__':
     args            = parser.parse_args()
     
-    sklearn_path    = Path('./module1_sklearn')
-    tf_path         = Path('./module2_tf')
+    sklearn_path    = Path('./modules/module1_sklearn')
+    tf_path         = Path('./modules/module2_tf')
     
     
     csv_savedir     = Path('./csv')
