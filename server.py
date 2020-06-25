@@ -164,8 +164,7 @@ def ai():
                                                         'RMSE'                 : vis_res['rmse']}
                 
         if mode_heatmap:
-            response['Renom'][mode] = {'Heatmap'    : {},
-                                       'Download'   : {}}
+            response['Renom'][mode].update({'Heatmap': {}, 'Download': {}})
 
             
             range1                              = values.get('range1').replace(' ', '').split(',')
