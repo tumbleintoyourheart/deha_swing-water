@@ -3,8 +3,8 @@ from .imports import *
 
 def get_sim_input(input_json, range1, range2):
     print('original input_json: {}'.format(input_json))
-    input_df                = pd.read_json(input_json, typ='series')
-    input_df                = pd.DataFrame([input_df]); print('input_df columns: {}'.format(input_df.columns))
+    input_dict      = json.loads(input_json, object_pairs_hook=OrderedDict); print('input_dict: {}'.format(input_dict))
+    input_df        = pd.DataFrame(input_dict, columns=input_dict.keys(), index=[0]); print('input_df: {}'.format(input_df))
 
     sim_name1, sim_range1   = range1[0], [float(x) for x in range1[1:]]
     sim_name2, sim_range2   = range2[0], [float(x) for x in range2[1:]]
