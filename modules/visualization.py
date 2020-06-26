@@ -3,8 +3,11 @@ from .imports import *
 
 
 def visualize(regressor, scaler_x_path, scaler_y_path, input_json, mode):
+    print('original input_json: {}'.format(input_json))
     input_json      = json.loads(input_json)
+    print('input_json: {}'.format(input_json))
     input_df        = pd.DataFrame(input_json)
+    print('input_df: {}'.format(input_df))
     input_pred      = input_df.drop(columns=["day", "moisture_per"])
 
     x_col           = input_pred
