@@ -12,13 +12,12 @@ def visualize(input_json, model, scaler):
 
     r2                  = round(r2_score(input_df["moisture_per"], pred), 2)
     mae1                = round(mean_absolute_error(input_df["moisture_per"], pred), 2)
-    # temp                = (input_df["moisture_per"] - pred).flatten()
-    # mae2                = round(max(abs(temp)), 2)
+    mae2                = round(max(abs((input_df["moisture_per"] - pred.flatten()))), 2)
     mse                 = round(mean_squared_error(input_df["moisture_per"], pred), 2)
     rmse                = round(np.sqrt(mean_squared_error(input_df["moisture_per"], pred)), 2)
     
     return {'sorted_pred': sorted_pred, 'r2': r2,
              'mae1': mae1, 
-            #  'mae2': mae2, 
+             'mae2': mae2, 
              'mse': mse, 
              'rmse': rmse}

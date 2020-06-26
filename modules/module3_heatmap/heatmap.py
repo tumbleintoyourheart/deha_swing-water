@@ -16,6 +16,7 @@ from    sklearn.externals           import joblib
 def get_sim_input(input_json, range1, range2):
     input_df                = pd.read_json(input_json, typ='series')
     input_df                = pd.DataFrame([input_df])
+    print(f'input_df columns: {input_df.columns}')
 
     sim_name1, sim_range1   = range1[0], [float(x) for x in range1[1:]]
     sim_name2, sim_range2   = range2[0], [float(x) for x in range2[1:]]
@@ -34,11 +35,13 @@ def get_sim_input(input_json, range1, range2):
         mat_df[i]   = input_df.loc[0, i]
 
     sim_mat_df      = sim_df.join(mat_df)
+    sim_mat_df       = sim_mat_df.loc[:, input_df.columns]
     sim_mat_df.to_csv('./modules/module3_heatmap/simulation.csv')
     return          sim_mat_df, sim_name1, sim_name2
 
 
 def simulation(input_df, model, scaler, sim_name1, sim_name2):
+    print(f'input_df columns: {input_df.columns}')
     pred_df         = input_df
 
     pred_df_scaled  = scaler.transform(pred_df) if (scaler != None) else pred_df

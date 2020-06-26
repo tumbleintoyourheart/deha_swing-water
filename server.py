@@ -266,7 +266,7 @@ def ai():
                     response['Tensorflow'][model_mode]['Visualization'] = {'Sorted predictions'   : vis_res['sorted_pred'],
                                                                         'R2'                   : vis_res['r2'],
                                                                         'MAE1'                 : vis_res['mae1'],
-                                                                        # 'MAE2'                 : vis_res['mae2'],
+                                                                        'MAE2'                 : vis_res['mae2'],
                                                                         'MSE'                  : vis_res['mse'],
                                                                         'RMSE'                 : vis_res['rmse']}
                     
