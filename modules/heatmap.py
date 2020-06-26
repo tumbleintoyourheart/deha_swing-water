@@ -3,7 +3,7 @@ from .imports import *
 
 def get_sim_input(input_json, range1, range2):
     print('original input_json: {}'.format(input_json))
-    input_df                = pd.read_json(input_json, typ='series'); print('input_df columns: {}'.format(input_df.columns))
+    input_df                = pd.read_json(input_json, typ='series')
     input_df                = pd.DataFrame([input_df]); print('input_df columns: {}'.format(input_df.columns))
 
     sim_name1, sim_range1   = range1[0], [float(x) for x in range1[1:]]
