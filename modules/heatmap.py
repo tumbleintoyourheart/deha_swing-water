@@ -5,6 +5,7 @@ def get_sim_input(input_json, range1, range2):
     print('original input_json: {}'.format(input_json))
     input_dict      = json.loads(input_json, object_pairs_hook=OrderedDict); print('input_dict: {}'.format(input_dict))
     input_df        = pd.DataFrame(input_dict, columns=input_dict.keys(), index=[0]); print('input_df: {}'.format(input_df))
+    print(f'input_df columns: {input_df.columns}')
 
     sim_name1, sim_range1   = range1[0], [float(x) for x in range1[1:]]
     sim_name2, sim_range2   = range2[0], [float(x) for x in range2[1:]]
@@ -22,10 +23,12 @@ def get_sim_input(input_json, range1, range2):
         mat_df[i]   = input_df.loc[0, i]
 
     sim_mat_df      = sim_df.join(mat_df)
+    sim_mat_df       = sim_mat_df.loc[:, input_df.columns]
     return          sim_mat_df, sim_name1, sim_name2
 
 
 def simulation(input_df, regressor, scaler_x_path, scaler_y_path, mode, sim_name1='no2poly_m3_h', sim_name2='fe_m3_h'):
+    print(f'input_df columns: {input_df.columns}')
     pred_df         = input_df
     
     scaler_x    = pickle.load(open(scaler_x_path, mode='rb'))

@@ -24,7 +24,7 @@ def visualize(regressor, scaler_x_path, scaler_y_path, input_json, mode):
     
     r2              = round(r2_score(input_df["moisture_per"], pred), 2)
     mae1            = round(mean_absolute_error(input_df["moisture_per"], pred), 2)
-    mae2            = round(max(abs(input_df["moisture_per"] - pred)), 2)
+    mae2            = round(max(abs(input_df["moisture_per"] - pred.flatten())), 2)
     mse             = round(mean_squared_error(input_df["moisture_per"], pred), 2)
     rmse            = round(np.sqrt(mean_squared_error(input_df["moisture_per"], pred)), 2)
     
