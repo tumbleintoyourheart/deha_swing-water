@@ -8,7 +8,7 @@ def predict(regressor, scaler_x_path, scaler_y_path, input_json, mode):
     print('input_json: {}'.format(input_dict))
     # input_json  = pd.read_json(input_json, typ='series')
     # input_df    = pd.DataFrame([input_json])
-    input_df    = pd.DataFrame.from_dict(input_dict)
+    input_df    = pd.DataFrame.from_dict(input_dict, columns=input_dict.keys())
     print(input_df)
     # x_col       = pd.DataFrame(input_df, columns=list(input.columns))
     x_col       = input_df
