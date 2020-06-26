@@ -3,7 +3,7 @@ from .imports import *
 
 
 def predict(regressor, scaler_x_path, scaler_y_path, input_json, mode):
-    print(f'original input_json: {}'.format(input_json))
+    print('original input_json: {}'.format(input_json))
     input_json  = json.loads(input_json)
     print('input_json: {}'.format(input_json))
     input_json  = pd.read_json(input_json, typ='series')
