@@ -4,7 +4,7 @@ from .imports import *
 
 def predict(regressor, scaler_x_path, scaler_y_path, input_json, mode):
     print('original input_json: {}'.format(input_json))
-    input_dict  = json.loads(input_json, object_pairs_hook=OrderedDict); print('input_json: {}'.format(input_dict))
+    input_dict  = json.loads(input_json, object_pairs_hook=OrderedDict); print('input_dict: {}'.format(input_dict))
     input_df    = pd.DataFrame(input_dict, columns=input_dict.keys(), index=[0]); print('input_df: {}'.format(input_df))
     x_col       = input_df
     

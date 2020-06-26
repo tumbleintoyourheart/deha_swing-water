@@ -3,11 +3,9 @@ from .imports import *
 
 
 def visualize(regressor, scaler_x_path, scaler_y_path, input_json, mode):
-    print('original input_json: {}'.format(input_json))
-    input_json      = json.loads(input_json)
-    print('input_json: {}'.format(input_json))
-    input_df        = pd.DataFrame(input_json)
-    print('input_df: {}'.format(input_df))
+    print('original input_json keys: {}'.format(input_json.keys()))
+    input_dict      = json.loads(input_json, object_pairs_hook=OrderedDict); print('input_dict keys: {}'.format(input_dict.keys()))
+    input_df        = pd.DataFrame(input_dict, columns=input_dict.keys()); print('input_df columns: {}'.format(input_df.columns))
     input_pred      = input_df.drop(columns=["day", "moisture_per"])
 
     x_col           = input_pred
