@@ -35,7 +35,7 @@ def get_sim_input(input_json, range1, range2):
         mat_df[i]   = input_df.loc[0, i]
 
     sim_mat_df      = sim_df.join(mat_df)
-    sim_mat_df       = sim_mat_df.loc[:, input_df.columns]
+    sim_mat_df      = sim_mat_df.loc[:, input_df.columns]
     sim_mat_df.to_csv('./modules/module3_heatmap/simulation.csv')
     return          sim_mat_df, sim_name1, sim_name2
 
@@ -53,7 +53,7 @@ def simulation(input_df, model, scaler, sim_name1, sim_name2):
 def summary(input_json):
     input_json              = json.loads(input_json)
     input_df                = pd.DataFrame(input_json)
-    input_df                = input_df.drop(columns=["day"])
+    input_df                = input_df.drop(columns=["date"])
     summary_df              = round(input_df.describe(), 2)
     summary_df.index.name   = 'category'
     summary_df.reset_index(inplace=True)
