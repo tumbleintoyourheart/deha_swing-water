@@ -16,6 +16,7 @@ from    modules.module1_sklearn.visualdata  import visualize    as sk_vis
 from    modules.module2_tf.prediction       import predict      as tf_pred
 from    modules.module2_tf.visualdata       import visualize    as tf_vis
 from    modules.module3_heatmap.heatmap     import *
+from    modules.utils                       import *
 
 
 
@@ -34,43 +35,27 @@ app                                         = Flask(__name__); CORS(app)
 
 
 
-def get_input(files, key):
-    if files.get(key):
-        inp         = files[key]
-        inp_name    = secure_filename(inp.filename)
-        return      inp, inp_name
-    else: return    None, None
-    
-    
-def save_input(inp, inp_name, save_dir):
-    os.makedirs(save_dir, exist_ok=True)
-    abs_path        = os.path.join(save_dir, inp_name)
-    inp.save(abs_path)
-    return          abs_path
-                
-
-
 @app.route('/upload_model', methods=['GET', 'POST'])
 def new_model():
+    '''
+    API to upload a model (.pickle or .hdf5), require a scaler.pickle if 'std' is in the model name
+    '''
     if request.method       == 'POST':
-        # values
         values              = request.values.to_dict()
+        files               = request.files.to_dict()
+        
+        
         device_id           = values.get('device_id')
-        # if device_id == None: return f'Please specify device_id.'
         if device_id        == None: return 'モデルIDを指示してください。'
         
-        # files
-        files               = request.files.to_dict()
+        
         model, model_name   = get_input(files, 'model')
         scaler, _           = get_input(files, 'scaler')
         
         
-        # cases
-        # if model == None: return 'Please specify a model to upload.'
         if model            == None: return 'モデルを指示してください。'
         
         if [('std' in model_name), scaler != None].count(True) == 1:
-            # return 'std model and scaler must come together. Please make sure to upload both.'
             return          '標準化ファイルも指示してください。'
         
         scaler_name         = f'scaler_of_{model_name.split(".")[0]}.pickle'
@@ -90,24 +75,32 @@ def new_model():
     
 @app.route('/ai', methods=['GET', 'POST'])
 def ai():
+    '''
+    Main AI flask server
+    '''
     if request.method       == 'POST':
+        # for tensorflow static graph
         global             graph, sess
         sess               = tf.Session()
         graph              = tf.get_default_graph()
         set_session(sess)
         
+        
+        # init the response dictionary
         response            = {}
         
         
-        # from request
+        # get values and files from request
         values              = request.values.to_dict()
         files               = request.files.to_dict()
         
-        # input df
+        
+        # input dataframes
         pred_df                             = values.get('prediction_dataframe')
         vis_df                              = values.get('visualize_dataframe')
         
-        # modes
+        
+        # modes to serve
         modes                               = values.get('modes').replace(' ', '').split(',')
         mode_pred                           = True if (('prediction' in modes) and pred_df) else False
         mode_heatmap                        = True if (('heatmap'    in modes) and pred_df) else False
@@ -115,6 +108,8 @@ def ai():
         mode_summary                        = True if (('summary'    in modes) and vis_df)  else False
         print(mode_pred, mode_heatmap, mode_vis, mode_summary)
         
+        
+        # summary
         if mode_summary:
             print('summary mode')
             response['Summary'] = {}
@@ -122,7 +117,7 @@ def ai():
             return              Response(summary_df.to_json(orient="records"), mimetype='application/json')
         
         
-        # device_id
+        # device_id assertion
         device_id           = values.get('device_id')
         if device_id        == None: return '設備IDを指示してください。'
         
@@ -137,14 +132,16 @@ def ai():
         
         if values.get('models'):
             model_name                  = values['models']
+            print(f'Model: {model_name}')
+
             
-            
-            print(model_name)
+            # available model assertion
             if model_name not in available_models:
                 print('not available model')
                 return f'Not available models. Current available models for device_id {device_id}: {available_models}.'
             
-            # nos or std?
+            
+            # standard or not
             if      'nos'   in model_name:
                 model_mode              = 'nos'
             elif    'std'   in model_name:
@@ -152,7 +149,8 @@ def ai():
             # else: return              f''
             print(model_mode)
             
-            # sklearn or tf?
+            
+            # sklearn or tensorflow
             if      'sk'    in model_name:
                 module                  = 'sklearn'
                 sklearn_model_name      = model_name
@@ -164,9 +162,9 @@ def ai():
                 tf_model                = load_model(tf_path/'models'/device_id/model_name)
             # else: return                f''
             print(f'module: {module}')
-        print(f'Loaded model: {model_name}')
+            print(f'Loaded model: {model_name}')
+        # else: return f''
         
-
 
         # init scalers
         sklearn_scaler, tf_scaler           = None, None
