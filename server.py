@@ -14,6 +14,9 @@ for w in [UserWarning, FutureWarning, DeprecationWarning]:
 
 
 def init(host='localhost', port='8080', model_id=0):
+    '''
+    Pull a regressor given an url
+    '''
     HOST = host
     PORT = port
     url = 'http://{}'.format(HOST)
@@ -30,6 +33,9 @@ def init(host='localhost', port='8080', model_id=0):
 
 @app.route('/renom_init', methods=['GET', 'POST'])
 def renom_init():
+    '''
+    API to save a pulled regressor in 'models' dictionary by 'model_id' key
+    '''
     if request.method == 'POST':
         values = request.values.to_dict()
         host = values.get('host')
@@ -50,6 +56,9 @@ def renom_init():
 
 @app.route('/upload_scaler', methods=['GET', 'POST'])
 def new_scaler():
+    '''
+    API to upload a pair of 'scaler_x' and 'scaler_y'
+    '''
     if request.method == 'POST':
         values                          = request.values.to_dict()
         files                           = request.files.to_dict()
@@ -83,17 +92,25 @@ def new_scaler():
     
 @app.route('/renom_ai', methods=['GET', 'POST'])
 def ai():
+    '''
+    Main AI flask server
+    '''
     if request.method == 'POST':
+        # init the response dictionary
         response                = {}
         
-        # from request
+        
+        # get values and files from request
         values                  = request.values.to_dict()
         files                   = request.files.to_dict()
         
         
-        # check
+        # 'model_id' assertion
         model_id                = values.get('model_id')
         if model_id             == None: return 'モデルIDを指示してください。'
+        
+        
+        # get a regressor from 'models' dictionary by 'model_id' key
         try:
             print('model_id: {}'.format(model_id))
             regressor           = models[model_id]
@@ -102,10 +119,13 @@ def ai():
             print(tb)
             return jsonify(Error='モデルを実装してください。')
         
+        
+        # device_id assertion
         device_id               = values.get('device_id')
         if device_id            == None: return '設備IDを指示してください。'
         
         
+        # standard or not
         mode                    = values.get('mode')
         if mode                 == 'std':
             scaler_x_path       = './{}/scaler_x_of_model_id_{}.pickle'.format(device_id, model_id)
@@ -120,23 +140,24 @@ def ai():
         else: scalers_path      = [None, None]
         
         
-
-        
         # input dataframes
         pred_df                 = values.get('prediction_dataframe')
         vis_df                  = values.get('visualize_dataframe')
         
-        # modes
+        
+        # modes to serve
         modes                   = values.get('modes').replace(' ', '').split(',')
         mode_pred               = True if (('prediction' in modes) and pred_df) else False
         mode_heatmap            = True if (('heatmap'    in modes) and pred_df) else False
-        
         mode_vis                = True if (('visualize'  in modes) and vis_df)  else False
         mode_summary            = True if (('summary'    in modes) and vis_df)  else False
         print(mode_pred, mode_heatmap, mode_vis, mode_summary)
         
         
+        # modes serving one by one
         response['Renom']       = {mode: {}}
+        
+        # prediction
         if mode_pred:
             try:
                 pred_res        = predict(regressor, *scalers_path, pred_df, mode)
@@ -148,6 +169,7 @@ def ai():
             pred_res            = '{:.2f}'.format(pred_res[0][0])
             response['Renom'][mode]['Prediction'] = pred_res
 
+        # visualization
         if mode_vis:
             try:
                 vis_res         = visualize(regressor, *scalers_path, vis_df, mode)
@@ -162,7 +184,8 @@ def ai():
                                                         'MAE2'                 : vis_res['mae2'],
                                                         'MSE'                  : vis_res['mse'],
                                                         'RMSE'                 : vis_res['rmse']}
-                
+        
+        # heatmap                
         if mode_heatmap:
             response['Renom'][mode].update({'Heatmap': {}, 'Download': {}})
 
